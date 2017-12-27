@@ -1,3 +1,4 @@
+
 /*==============================================================================
 *                                                                              *
 * Fruit Machine Simulator with Excel Interface version 0.0.1                   *
@@ -22,10 +23,20 @@
 ==============================================================================*/
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * Application single entry point class.
@@ -62,85 +73,17 @@ public class Main {
 	/**
 	 * Slot game pay table.
 	 */
-	private static final int[][] PAYTABLE = {
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-	};
+	private static final int[][] PAYTABLE = {};
 
 	/**
 	 * Lines combinations.
 	 */
-	private static final int[][] LINES = {
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-			new int[] { 0, 0, 0, 0, 0 },
-
-	};
+	private static final int[][] LINES = {};
 
 	/**
 	 * Stips in the base game as symbols names.
 	 */
-	private static final String[][] BASE_REELS = {
-
-			new String[] {},
-
-			new String[] {},
-
-			new String[] {},
-
-			new String[] {},
-
-			new String[] {},
-
-	};
+	private static final String[][] BASE_REELS = {};
 
 	/**
 	 * Stips in base game.
@@ -155,24 +98,12 @@ public class Main {
 	/**
 	 * Use reels stops in brute force combinations generation.
 	 */
-	private static int[] reelsStops = new int[] { 0, 0, 0, 0, 0 };
+	private static int[] reelsStops = {};
 
 	/**
 	 * Current visible symbols on the screen.
 	 */
-	private static int[][] view = {
-
-			new int[] { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, },
-
-			new int[] { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, },
-
-			new int[] { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, },
-
-			new int[] { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, },
-
-			new int[] { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, }
-
-	};
+	private static int[][] view = {};
 
 	/**
 	 * Current free spins multiplier.
@@ -444,38 +375,50 @@ public class Main {
 		/*
 		 * Wild index with counter and win amount.
 		 */
-		int[] values = { WILD__INDICES, 0, 0 };
+		int[][] values = new int[WILD__INDICES.size()][];
+		for (int i = 0; i < WILD__INDICES.size(); i++) {
+			values[i] = new int[] { (Integer) (WILD__INDICES.toArray()[i]), 0, 0 };
+		}
 
 		/*
 		 * If there is no leading wild there is no wild win.
 		 */
-		if (line[0] != values[0]) {
-			return (values);
+		if (WILD__INDICES.contains(line[0]) == false) {
+			return (new int[] { NO_SYMBOL_INDEX, 0, 0 });
 		}
 
 		/*
-		 * Wild symbol passing to find first regular symbol.
+		 * Each wild can lead to different level of win.
 		 */
-		for (int i = 0; i < line.length; i++) {
+		int index = 0;
+		for (int j = 0; j < values.length; j++) {
 			/*
-			 * First no wild symbol found.
+			 * Wild symbol passing to find first regular symbol.
 			 */
-			if (line[i] != values[0]) {
-				break;
+			for (int i = 0; i < line.length; i++) {
+				/*
+				 * First no wild symbol found.
+				 */
+				if (line[i] != values[j][0]) {
+					break;
+				}
+
+				/*
+				 * Count how long is the wild line.
+				 */
+				values[j][1]++;
 			}
 
 			/*
-			 * Count how long is the wild line.
+			 * Calculate win marked by line with wilds.
 			 */
-			values[1]++;
+			values[j][2] = singleLineBet * PAYTABLE[values[j][1]][values[j][0]];
+			if (values[index][2] < values[j][2]) {
+				index = j;
+			}
 		}
 
-		/*
-		 * Calculate win marked by line with wilds.
-		 */
-		values[2] = singleLineBet * PAYTABLE[values[1]][values[0]];
-
-		return (values);
+		return (values[index]);
 	}
 
 	/**
@@ -633,28 +576,38 @@ public class Main {
 	 */
 	private static int scatterWin(int[][] view) {
 		/*
+		 * Create as many counters as many scatters there in the game.
+		 */
+		Map<Integer, Integer> numberOfScatters = new HashMap<Integer, Integer>();
+		for (Integer scatter : SCATTER_INDICES) {
+			numberOfScatters.put(scatter, 0);
+		}
+
+		/*
 		 * Count scatters on the screen.
 		 */
-		int numberOfScatters = 0;
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				if (view[i][j] == SCATTER_INDICES) {
-					numberOfScatters++;
+				if (SCATTER_INDICES.contains(view[i][j]) == true) {
+					numberOfScatters.put(view[i][j], numberOfScatters.get(view[i][j]) + 1);
 				}
 			}
 		}
 
-		int win = PAYTABLE[numberOfScatters][SCATTER_INDICES] * totalBet * scatterMultiplier;
+		int win = 0;
+		for (Integer scatter : SCATTER_INDICES) {
+			win += PAYTABLE[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
 
-		/*
-		 * Update statistics.
-		 */
-		if (win > 0 && freeGamesNumber == 0) {
-			baseSymbolMoney[numberOfScatters][SCATTER_INDICES] += win;
-			baseGameSymbolsHitRate[numberOfScatters][SCATTER_INDICES]++;
-		} else if (win > 0 && freeGamesNumber > 0) {
-			freeSymbolMoney[numberOfScatters][SCATTER_INDICES] += win * freeGamesMultiplier;
-			freeGameSymbolsHitRate[numberOfScatters][SCATTER_INDICES]++;
+			/*
+			 * Update statistics.
+			 */
+			if (win > 0 && freeGamesNumber == 0) {
+				baseSymbolMoney[numberOfScatters.get(scatter)][scatter] += win;
+				baseGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
+			} else if (win > 0 && freeGamesNumber > 0) {
+				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += win * freeGamesMultiplier;
+				freeGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
+			}
 		}
 
 		return (win);
@@ -677,7 +630,9 @@ public class Main {
 		int numberOfScatters = 0;
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				if (view[i][j] == SCATTER_INDICES) {
+				// TODO If there are more than one scatter it is not common all of them to
+				// trigger free games.
+				if (SCATTER_INDICES.contains(view[i][j]) == true) {
 					numberOfScatters++;
 				}
 			}
@@ -831,11 +786,10 @@ public class Main {
 		System.out.println("*                                                                             *");
 		System.out.println("*******************************************************************************");
 		System.out.println("*                                                                             *");
-		System.out.println("* -h              Help screen.                                                *");
 		System.out.println("* -help           Help screen.                                                *");
 		System.out.println("*                                                                             *");
-		System.out.println("* -g<number>      Number of games (default 10 000 000).                       *");
-		System.out.println("* -p<number>      Progress on each iteration number (default 10 000 000).     *");
+		System.out.println("* -g=<number>     Number of games (default 10 000 000).                       *");
+		System.out.println("* -p=<number>     Progress on each iteration number (default 10 000 000).     *");
 		System.out.println("*                                                                             *");
 		System.out.println("* -freeoff        Switch off free spins.                                      *");
 		System.out.println("* -wildsoff       Switch off wilds.                                           *");
@@ -1190,8 +1144,37 @@ public class Main {
 	 * 
 	 * @param args
 	 *            Command line arguments.
+	 * @throws ParseException
+	 *             When there is a problem with command line arguments.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
+		/*
+		 * Handling command line arguments with library.
+		 */
+		Options options = new Options();
+		options.addOption(new Option("h", "help", false, "Help screen."));
+
+		options.addOption(Option.builder().argName("input").hasArg().numberOfArgs(2).valueSeparator()
+				.desc("Input Excel file name.").required().build());
+
+		options.addOption(Option.builder().argName("reels").hasArg().numberOfArgs(2).valueSeparator()
+				.desc("Excel sheet name with reels.").required().build());
+
+		options.addOption(Option.builder().argName("g").hasArg().numberOfArgs(2).valueSeparator()
+				.desc("Number of games (default 10 000 000).").build());
+		options.addOption(Option.builder().argName("p").hasArg().numberOfArgs(2).valueSeparator()
+				.desc("Progress on each iteration number (default 10 000 000).").build());
+
+		options.addOption(new Option("freeoff", false, "Switch off free spins."));
+		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
+		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
+
+		options.addOption(new Option("verbose", false, "Print intermediate results."));
+		options.addOption(new Option("verify", false, "Print input data structures."));
+
+		CommandLineParser parser = new DefaultParser();
+		CommandLine commands = parser.parse(options, args);
+
 		printExecuteCommand(args);
 		System.out.println();
 
@@ -1202,7 +1185,7 @@ public class Main {
 		 * Parse command line arguments.
 		 */
 		for (int a = 0; a < args.length; a++) {
-			if (args.length > 0 && args[a].contains("-g")) {
+			if (args.length > 0 && args[a].contains("-g=")) {
 				String parameter = args[a].substring(2);
 
 				if (parameter.contains("k")) {
@@ -1221,7 +1204,7 @@ public class Main {
 				}
 			}
 
-			if (args.length > 0 && args[a].contains("-p")) {
+			if (args.length > 0 && args[a].contains("-p=")) {
 				String parameter = args[a].substring(2);
 
 				if (parameter.contains("k")) {
