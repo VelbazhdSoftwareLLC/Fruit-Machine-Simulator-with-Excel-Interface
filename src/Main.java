@@ -33,6 +33,7 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -759,11 +760,11 @@ public class Main {
 	}
 
 	/**
-	 * Print help information.
+	 * Print aobut information.
 	 *
 	 * @author Todor Balabanov
 	 */
-	private static void printHelp() {
+	private static void printAbout() {
 		System.out.println("*******************************************************************************");
 		System.out.println("* Fruit Machine Simulator with Excel Interface version 0.0.1                  *");
 		System.out.println("* Copyrights (C) 2017 Velbazhd Software LLC                                   *");
@@ -783,20 +784,6 @@ public class Main {
 		System.out.println("*                                                                             *");
 		System.out.println("* You should have received a copy of the GNU General Public License           *");
 		System.out.println("* along with this program. If not, see <http://www.gnu.org/licenses/>.        *");
-		System.out.println("*                                                                             *");
-		System.out.println("*******************************************************************************");
-		System.out.println("*                                                                             *");
-		System.out.println("* -help           Help screen.                                                *");
-		System.out.println("*                                                                             *");
-		System.out.println("* -g=<number>     Number of games (default 10 000 000).                       *");
-		System.out.println("* -p=<number>     Progress on each iteration number (default 10 000 000).     *");
-		System.out.println("*                                                                             *");
-		System.out.println("* -freeoff        Switch off free spins.                                      *");
-		System.out.println("* -wildsoff       Switch off wilds.                                           *");
-		System.out.println("* -bruteforce     Switch on brute force only for the base game.               *");
-		System.out.println("*                                                                             *");
-		System.out.println("* -verbose        Print intermediate results.                                 *");
-		System.out.println("* -verify         Print input data structures.                                *");
 		System.out.println("*                                                                             *");
 		System.out.println("*******************************************************************************");
 	}
@@ -1140,7 +1127,20 @@ public class Main {
 	}
 
 	/**
+	 * Load data structures from ODS file.
+	 * 
+	 * @param inputFileName
+	 *            Name of the input file.
+	 * @param reelsSheetName
+	 *            Name of the reels sheet.
+	 */
+	private static void loadGameStructure(String inputFileName, String reelsSheetName) {
+	}
+
+	/**
 	 * Application single entry point method.
+	 * 
+	 * java Main -g 10m -p 100k -input "./bin/game001.ods" -reels "Reels 92 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
@@ -1149,21 +1149,27 @@ public class Main {
 	 */
 	public static void main(String[] args) throws ParseException {
 		/*
+		 * Print execution command.
+		 */
+		printExecuteCommand(args);
+		System.out.println();
+
+		/*
 		 * Handling command line arguments with library.
 		 */
 		Options options = new Options();
 		options.addOption(new Option("h", "help", false, "Help screen."));
 
-		options.addOption(Option.builder().argName("input").hasArg().numberOfArgs(2).valueSeparator()
-				.desc("Input Excel file name.").required().build());
+		options.addOption(Option.builder("input").argName("file").hasArg().valueSeparator()
+				.desc("Input Excel file name.").build());
 
-		options.addOption(Option.builder().argName("reels").hasArg().numberOfArgs(2).valueSeparator()
-				.desc("Excel sheet name with reels.").required().build());
+		options.addOption(Option.builder("reels").argName("sheet").hasArg().valueSeparator()
+				.desc("Excel sheet name with reels.").build());
 
-		options.addOption(Option.builder().argName("g").hasArg().numberOfArgs(2).valueSeparator()
-				.desc("Number of games (default 10 000 000).").build());
-		options.addOption(Option.builder().argName("p").hasArg().numberOfArgs(2).valueSeparator()
-				.desc("Progress on each iteration number (default 10 000 000).").build());
+		options.addOption(Option.builder("g").longOpt("generations").argName("number").hasArg().valueSeparator()
+				.desc("Number of games (default 20m).").build());
+		options.addOption(Option.builder("p").longOpt("progress").argName("number").hasArg().valueSeparator()
+				.desc("Progress on each iteration number (default 1m).").build());
 
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
@@ -1172,91 +1178,119 @@ public class Main {
 		options.addOption(new Option("verbose", false, "Print intermediate results."));
 		options.addOption(new Option("verify", false, "Print input data structures."));
 
-		CommandLineParser parser = new DefaultParser();
-		CommandLine commands = parser.parse(options, args);
-
-		printExecuteCommand(args);
-		System.out.println();
-
-		long numberOfSimulations = 20000000L;
-		long progressPrintOnIteration = 1000000L;
-
 		/*
 		 * Parse command line arguments.
 		 */
-		for (int a = 0; a < args.length; a++) {
-			if (args.length > 0 && args[a].contains("-g=")) {
-				String parameter = args[a].substring(2);
+		CommandLineParser parser = new DefaultParser();
+		CommandLine commands = parser.parse(options, args);
 
-				if (parameter.contains("k")) {
-					parameter = parameter.substring(0, parameter.length() - 1);
-					parameter += "000";
-				}
+		/*
+		 * If help is required print it and quit the program.
+		 */
+		if (commands.hasOption("help") == true) {
+			printAbout();
+			System.out.println();
+			(new HelpFormatter()).printHelp("java Main", options, true);
+			System.out.println();
+			System.exit(0);
+		}
 
-				if (parameter.contains("m")) {
-					parameter = parameter.substring(0, parameter.length() - 1);
-					parameter += "000000";
-				}
+		/*
+		 * Read input file name.
+		 */
+		String inputFileName = "";
+		if (commands.hasOption("input") == true) {
+			inputFileName = commands.getOptionValue("input");
+		} else {
+			System.out.println("Input file name is missing!");
+			System.out.println();
+			(new HelpFormatter()).printHelp("java Main", options, true);
+			System.out.println();
+			System.exit(0);
+		}
 
-				try {
-					numberOfSimulations = Integer.valueOf(parameter);
-				} catch (Exception e) {
-				}
-			}
+		/*
+		 * Read reels sheet name.
+		 */
+		String reelsSheetName = "";
+		if (commands.hasOption("reels") == true) {
+			reelsSheetName = commands.getOptionValue("reels");
+		} else {
+			System.out.println("Reels sheet name is missing!");
+			System.out.println();
+			(new HelpFormatter()).printHelp("java Main", options, true);
+			System.out.println();
+			System.exit(0);
+		}
 
-			if (args.length > 0 && args[a].contains("-p=")) {
-				String parameter = args[a].substring(2);
+		/*
+		 * Reading of input file and reels data sheet.
+		 */
+		loadGameStructure(inputFileName, reelsSheetName);
 
-				if (parameter.contains("k")) {
-					parameter = parameter.substring(0, parameter.length() - 1);
-					parameter += "000";
-				}
+		/*
+		 * Verification of the data structures.
+		 */
+		if (commands.hasOption("verify") == true) {
+			printDataStructures();
+			System.exit(0);
+		}
 
-				if (parameter.contains("m")) {
-					parameter = parameter.substring(0, parameter.length() - 1);
-					parameter += "000000";
-				}
+		/*
+		 * Switch off free spins.
+		 */
+		if (commands.hasOption("freeoff") == true) {
+			freeOff = true;
+		}
 
-				try {
-					progressPrintOnIteration = Integer.valueOf(parameter);
-					verboseOutput = true;
-				} catch (Exception e) {
-				}
-			}
+		/*
+		 * Switch off wilds substitution.
+		 */
+		if (commands.hasOption("wildsoff") == true) {
+			wildsOff = true;
+		}
 
-			if (args.length > 0 && args[a].contains("-freeoff")) {
-				freeOff = true;
-			}
+		/*
+		 * Run brute force instead of Monte Carlo simulation.
+		 */
+		if (commands.hasOption("bruteforce") == true) {
+			bruteForce = true;
+		}
 
-			if (args.length > 0 && args[a].contains("-wildsoff")) {
-				wildsOff = true;
-			}
+		/*
+		 * Print calculation progress.
+		 */
+		if (commands.hasOption("verbose") == true) {
+			verboseOutput = true;
+		}
 
-			if (args.length > 0 && args[a].contains("-bruteforce")) {
-				bruteForce = true;
-			}
+		long numberOfSimulations = 20_000_000L;
+		long progressPrintOnIteration = 1_000_000L;
 
-			if (args.length > 0 && args[a].contains("-verbose")) {
-				verboseOutput = true;
-			}
-
-			if (args.length > 0 && args[a].contains("-verify")) {
-				printDataStructures();
-				System.exit(0);
-			}
-
-			if (args.length > 0 && args[a].contains("-help")) {
-				printHelp();
-				System.out.println();
-				System.exit(0);
-			}
-
-			if (args.length > 0 && args[a].contains("-h")) {
-				printHelp();
-				System.out.println();
-				System.exit(0);
+		/*
+		 * Adjust number of simulations.
+		 */
+		if (commands.hasOption("generations") == true) {
+			try {
+				numberOfSimulations = Long
+						.valueOf(commands.getOptionValue("generations").replace("m", "000000").replace("k", "000"));
+			} catch (Exception e) {
 			}
 		}
+
+		/*
+		 * Adjust progress reporting interval.
+		 */
+		if (commands.hasOption("progress") == true) {
+			try {
+				progressPrintOnIteration = Long
+						.valueOf(commands.getOptionValue("progress").replace("m", "000000").replace("k", "000"));
+				verboseOutput = true;
+			} catch (Exception e) {
+			}
+		}
+		System.err.println(numberOfSimulations);
+		System.err.println(progressPrintOnIteration);
 
 		/*
 		 * Calculate all combinations in base game.
