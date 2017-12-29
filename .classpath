@@ -3,6 +3,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/odfdom-java-0.8.11-incubating.jar"/>
+	<classpathentry kind="lib" path="lib/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="lib/poi-3.17.jar"/>
+	<classpathentry kind="lib" path="lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.17.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

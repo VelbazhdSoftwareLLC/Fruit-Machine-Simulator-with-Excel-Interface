@@ -22,6 +22,10 @@
 *                                                                              *
 ==============================================================================*/
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,9 +39,10 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * Application single entry point class.
@@ -1135,12 +1140,33 @@ public class Main {
 	 *            Name of the reels sheet.
 	 */
 	private static void loadGameStructure(String inputFileName, String reelsSheetName) {
+		XSSFWorkbook workbook = null;
+		try {
+			workbook = new XSSFWorkbook(new FileInputStream(new File(inputFileName)));
+		} catch (Exception e) {
+			System.out.println("Input file " + inputFileName + " is not usable!");
+			System.exit(0);
+		}
+
+		XSSFSheet sheet = workbook.getSheet("Summary");
+
+		int numberOfReels = Integer.valueOf(sheet.getRow(1).getCell(1).getRawValue());
+		int numberOfRows = Integer.valueOf(sheet.getRow(2).getCell(1).getRawValue());
+		int numberOfLines = Integer.valueOf(sheet.getRow(3).getCell(1).getRawValue());
+		int numberOfSybols = Integer.valueOf(sheet.getRow(4).getCell(1).getRawValue());
+		double rtp = Double.valueOf(sheet.getRow(5).getCell(1).getRawValue());
+	}
+
+	/**
+	 * Generate initial reels according paytable values.
+	 */
+	private static void initialReels() {
 	}
 
 	/**
 	 * Application single entry point method.
 	 * 
-	 * java Main -g 10m -p 100k -input "./bin/game001.ods" -reels "Reels 92 RTP"
+	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -reels "Reels 92 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
@@ -1171,9 +1197,10 @@ public class Main {
 		options.addOption(Option.builder("p").longOpt("progress").argName("number").hasArg().valueSeparator()
 				.desc("Progress on each iteration number (default 1m).").build());
 
+		options.addOption(new Option("initial", false, "Generate initial reels according paytable values."));
+		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
-		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 
 		options.addOption(new Option("verbose", false, "Print intermediate results."));
 		options.addOption(new Option("verify", false, "Print input data structures."));
@@ -1227,6 +1254,15 @@ public class Main {
 		 * Reading of input file and reels data sheet.
 		 */
 		loadGameStructure(inputFileName, reelsSheetName);
+
+		/*
+		 * Generate initial reels according paytable values.
+		 */
+		if (commands.hasOption("initial") == true) {
+			initialReels();
+			printDataStructures();
+			System.exit(0);
+		}
 
 		/*
 		 * Verification of the data structures.
