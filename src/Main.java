@@ -24,8 +24,6 @@
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +67,7 @@ public class Main {
 	/**
 	 * Index of the wild symbol in the array of symbols.
 	 */
-	private static final Set<Integer> WILD__INDICES = new HashSet<Integer>();
+	private static final Set<Integer> WILD_INDICES = new HashSet<Integer>();
 
 	/**
 	 * List of symbols names.
@@ -79,17 +77,22 @@ public class Main {
 	/**
 	 * Slot game pay table.
 	 */
-	private static final int[][] PAYTABLE = {};
+	private static int[][] paytable = {};
 
 	/**
 	 * Lines combinations.
 	 */
-	private static final int[][] LINES = {};
+	private static int[][] lines = {};
 
 	/**
 	 * Stips in the base game as symbols names.
 	 */
 	private static final String[][] BASE_REELS = {};
+
+	/**
+	 * Stips in the free spins as symbols names.
+	 */
+	private static final String[][] FREE_REELS = {};
 
 	/**
 	 * Stips in base game.
@@ -134,7 +137,7 @@ public class Main {
 	/**
 	 * Total bet in single base game spin.
 	 */
-	private static int totalBet = singleLineBet * LINES.length;
+	private static int totalBet = singleLineBet * lines.length;
 
 	/**
 	 * Free spins to be played.
@@ -381,15 +384,15 @@ public class Main {
 		/*
 		 * Wild index with counter and win amount.
 		 */
-		int[][] values = new int[WILD__INDICES.size()][];
-		for (int i = 0; i < WILD__INDICES.size(); i++) {
-			values[i] = new int[] { (Integer) (WILD__INDICES.toArray()[i]), 0, 0 };
+		int[][] values = new int[WILD_INDICES.size()][];
+		for (int i = 0; i < WILD_INDICES.size(); i++) {
+			values[i] = new int[] { (Integer) (WILD_INDICES.toArray()[i]), 0, 0 };
 		}
 
 		/*
 		 * If there is no leading wild there is no wild win.
 		 */
-		if (WILD__INDICES.contains(line[0]) == false) {
+		if (WILD_INDICES.contains(line[0]) == false) {
 			return (new int[] { NO_SYMBOL_INDEX, 0, 0 });
 		}
 
@@ -418,7 +421,7 @@ public class Main {
 			/*
 			 * Calculate win marked by line with wilds.
 			 */
-			values[j][2] = singleLineBet * PAYTABLE[values[j][1]][values[j][0]];
+			values[j][2] = singleLineBet * paytable[values[j][1]][values[j][0]];
 			if (values[index][2] < values[j][2]) {
 				index = j;
 			}
@@ -457,7 +460,7 @@ public class Main {
 			/*
 			 * First no wild symbol found.
 			 */
-			if (WILD__INDICES.contains(line[i]) == false) {
+			if (WILD_INDICES.contains(line[i]) == false) {
 				if (SCATTER_INDICES.contains(line[i]) == false) {
 					symbol = line[i];
 				}
@@ -476,7 +479,7 @@ public class Main {
 		 * Wild symbol substitution.
 		 */
 		for (int i = 0; i < line.length && wildsOff == false; i++) {
-			if (WILD__INDICES.contains(line[i]) == false) {
+			if (WILD_INDICES.contains(line[i]) == false) {
 				continue;
 			}
 
@@ -510,7 +513,7 @@ public class Main {
 			line[i] = NO_SYMBOL_INDEX;
 		}
 
-		int win = singleLineBet * PAYTABLE[number][symbol] * wildInLineMultiplier;
+		int win = singleLineBet * paytable[number][symbol] * wildInLineMultiplier;
 
 		/*
 		 * Adjust the win according wild line information.
@@ -551,14 +554,14 @@ public class Main {
 		/*
 		 * Check wins in all possible lines.
 		 */
-		for (int l = 0; l < LINES.length; l++) {
+		for (int l = 0; l < lines.length; l++) {
 			int[] line = { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX };
 
 			/*
 			 * Prepare line for combination check.
 			 */
 			for (int i = 0; i < line.length; i++) {
-				int index = LINES[l][i];
+				int index = lines[l][i];
 				line[i] = view[i][index];
 			}
 
@@ -602,7 +605,7 @@ public class Main {
 
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
-			win += PAYTABLE[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
+			win += paytable[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
 
 			/*
 			 * Update statistics.
@@ -800,14 +803,14 @@ public class Main {
 	 */
 	private static void printDataStructures() {
 		System.out.println("Paytable:");
-		for (int i = 0; i < PAYTABLE.length; i++) {
+		for (int i = 0; i < paytable.length; i++) {
 			System.out.print("\t" + i + " of");
 		}
 		System.out.println();
-		for (int j = 0; j < PAYTABLE[0].length; j++) {
+		for (int j = 0; j < paytable[0].length; j++) {
 			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
-			for (int i = 0; i < PAYTABLE.length; i++) {
-				System.out.print(PAYTABLE[i][j] + "\t");
+			for (int i = 0; i < paytable.length; i++) {
+				System.out.print(paytable[i][j] + "\t");
 			}
 			System.out.println();
 		}
@@ -816,9 +819,9 @@ public class Main {
 		// TODO Visualize with stars and O letter.
 		System.out.println("Lines:");
 		for (int j = 0; j < view[0].length; j++) {
-			for (int l = 0; l < LINES.length; l++) {
-				for (int i = 0; i < LINES[l].length; i++) {
-					if (j == LINES[l][i]) {
+			for (int l = 0; l < lines.length; l++) {
+				for (int i = 0; i < lines[l].length; i++) {
+					if (j == lines[l][i]) {
 						System.out.print("*");
 					} else {
 						System.out.print("O");
@@ -894,7 +897,7 @@ public class Main {
 				System.out.print("\tReel " + (i + 1));
 			}
 			System.out.println();
-			for (int j = 0; j < counters[0].length; j++) {
+			for (int j = 0; j < SYMBOLS_NAMES.size(); j++) {
 				System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 				for (int i = 0; i < counters.length; i++) {
 					System.out.print(counters[i][j] + "\t");
@@ -944,7 +947,7 @@ public class Main {
 				System.out.print("\tReel " + (i + 1));
 			}
 			System.out.println();
-			for (int j = 0; j < counters[0].length; j++) {
+			for (int j = 0; j < SYMBOLS_NAMES.size(); j++) {
 				System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 				for (int i = 0; i < counters.length; i++) {
 					System.out.print(counters[i][j] + "\t");
@@ -1148,13 +1151,71 @@ public class Main {
 			System.exit(0);
 		}
 
-		XSSFSheet sheet = workbook.getSheet("Summary");
+		XSSFSheet sheet = null;
 
+		/*
+		 * Load common game information.
+		 */
+		sheet = workbook.getSheet("Summary");
 		int numberOfReels = Integer.valueOf(sheet.getRow(1).getCell(1).getRawValue());
 		int numberOfRows = Integer.valueOf(sheet.getRow(2).getCell(1).getRawValue());
 		int numberOfLines = Integer.valueOf(sheet.getRow(3).getCell(1).getRawValue());
-		int numberOfSybols = Integer.valueOf(sheet.getRow(4).getCell(1).getRawValue());
+		int numberOfSymbols = Integer.valueOf(sheet.getRow(4).getCell(1).getRawValue());
 		double rtp = Double.valueOf(sheet.getRow(5).getCell(1).getRawValue());
+
+		/*
+		 * Store all symbol names and mark special like wilds and scatters.
+		 */
+		sheet = workbook.getSheet("Symbols");
+		for (int s = 1; s <= numberOfSymbols; s++) {
+			SYMBOLS_NAMES.add(sheet.getRow(s).getCell(0).getStringCellValue());
+
+			if (sheet.getRow(s).getCell(0).getRawValue().equals("Wild")) {
+				WILD_INDICES.add(s - 1);
+			}
+
+			if (sheet.getRow(s).getCell(0).getRawValue().equals("Scatter") == true) {
+				SCATTER_INDICES.add(s - 1);
+			}
+		}
+
+		/*
+		 * Load paytable.
+		 */
+		sheet = workbook.getSheet("Paytable");
+		paytable = new int[numberOfReels + 1][numberOfSymbols];
+		for (int r = 1; r <= numberOfSymbols; r++) {
+			for (int c = 1; c <= numberOfReels; c++) {
+				paytable[c][r - 1] = Integer.valueOf(sheet.getRow(r).getCell(numberOfReels - c + 1).getRawValue());
+			}
+		}
+
+		/*
+		 * Load lines.
+		 */
+		sheet = workbook.getSheet("Lines");
+		lines = new int[numberOfLines][numberOfReels];
+		for (int l = 0; l < numberOfLines; l++) {
+			for (int r = 0; r < numberOfRows; r++) {
+				for (int c = 0; c < numberOfReels; c++) {
+					if (sheet.getRow(l * (numberOfRows + 1) + r).getCell(c).getStringCellValue()
+							.contains("*") == true) {
+						lines[l][c] = r;
+					}
+				}
+			}
+		}
+
+		// TODO Read all input file data sheets.
+
+		view = new int[numberOfReels][numberOfRows];
+		for (int i = 0; i < view.length; i++) {
+			for (int j = 0; j < view[i].length; j++) {
+				view[i][j] = NO_SYMBOL_INDEX;
+			}
+		}
+
+		totalBet = singleLineBet * lines.length;
 	}
 
 	/**
@@ -1336,7 +1397,12 @@ public class Main {
 			 * Minus one is needed in order first combination to start from zeros in brute
 			 * force calculations.
 			 */
-			reelsStops = new int[] { -1, 0, 0, 0, 0 };
+			reelsStops = new int[baseReels.length];
+			for (int i = 1; i < reelsStops.length; i++) {
+				reelsStops[i] = 0;
+			}
+			reelsStops[0] = -1;
+
 			numberOfSimulations = 1;
 			for (int i = 0; i < baseReels.length; i++) {
 				numberOfSimulations *= baseReels[i].length;
