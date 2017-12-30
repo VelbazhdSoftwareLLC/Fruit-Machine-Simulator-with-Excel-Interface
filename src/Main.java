@@ -25,6 +25,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -846,7 +847,9 @@ public class Main {
 		}
 		System.out.println();
 
-		// TODO Visualize with stars and O letter.
+		/*
+		 * Visualize with stars and O letter.
+		 */
 		System.out.println("Lines:");
 		for (int j = 0; j < view[0].length; j++) {
 			for (int l = 0; l < lines.length; l++) {
@@ -1299,13 +1302,76 @@ public class Main {
 		}
 
 		view = new int[numberOfReels][numberOfRows];
-		initialize();
 	}
 
 	/**
 	 * Generate initial reels according paytable values.
 	 */
-	private static void initialReels() {
+	private static void initialReels(int targetLength) {
+		/*
+		 * Initialize sums.
+		 */
+		double values[] = new double[SYMBOLS_NAMES.size()];
+		for (int symbol = 0; symbol < values.length; symbol++) {
+			values[symbol] = 0D;
+		}
+
+		/*
+		 * Sum win coefficients for each symbol.
+		 */
+		double total = 0;
+		for (int numberOf = 0; numberOf < paytable.length; numberOf++) {
+			for (int symbol = 0; symbol < paytable[numberOf].length; symbol++) {
+				values[symbol] += paytable[numberOf][symbol];
+				total += paytable[numberOf][symbol];
+			}
+		}
+
+		/*
+		 * Normalize values between 0 and 1 and find the minimum.
+		 */
+		double min = 1;
+		for (int symbol = 0; symbol < values.length; symbol++) {
+			values[symbol] /= total;
+			values[symbol] = 1 / values[symbol];
+
+			if (min > values[symbol]) {
+				min = values[symbol];
+			}
+		}
+
+		/*
+		 * Estimate amount of each symbol on the reel.
+		 */
+		total = 0;
+		for (int symbol = 0; symbol < values.length; symbol++) {
+			values[symbol] *= (1D / min);
+			total += values[symbol];
+		}
+		double fixLength = targetLength / total;
+
+		/*
+		 * Fix the length if it is too big.
+		 */
+		total = 0;
+		for (int symbol = 0; symbol < values.length; symbol++) {
+			values[symbol] *= fixLength;
+			values[symbol] = Math.ceil(values[symbol]);
+			total += values[symbol];
+		}
+
+		/*
+		 * Populate initial reels.
+		 */
+		baseStrips = new String[view.length][(int) total];
+		for (int symbol = 0, level = 0; symbol < values.length; symbol++) {
+			for (int counter = 0; counter < values[symbol]; counter++) {
+				for (int reel = 0; reel < baseStrips.length; reel++) {
+					baseStrips[reel][level] = SYMBOLS_NAMES.get(symbol);
+				}
+				level++;
+			}
+		}
 	}
 
 	/**
@@ -1346,7 +1412,9 @@ public class Main {
 		options.addOption(Option.builder("p").longOpt("progress").argName("number").hasArg().valueSeparator()
 				.desc("Progress on each iteration number (default 1m).").build());
 
-		options.addOption(new Option("initial", false, "Generate initial reels according paytable values."));
+		options.addOption(Option.builder("initial").argName("number").hasArg().valueSeparator()
+				.desc("Generate initial reels according paytable values and reel target length.").build());
+
 		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
@@ -1411,12 +1479,14 @@ public class Main {
 		 * Reading of input file and reels data sheet.
 		 */
 		loadGameStructure(inputFileName, baseReelsSheetName, freeReelsSheetName);
+		initialize();
 
 		/*
 		 * Generate initial reels according paytable values.
 		 */
 		if (commands.hasOption("initial") == true) {
-			initialReels();
+			initialReels(Integer.valueOf(commands.getOptionValue("initial")));
+			initialize();
 			printDataStructures();
 			System.exit(0);
 		}
