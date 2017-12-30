@@ -233,78 +233,22 @@ public class Main {
 	/**
 	 * Symbols win hit rate in base game.
 	 */
-	private static long[][] baseSymbolMoney = {
-
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-	};
+	private static long[][] baseSymbolMoney = {};
 
 	/**
 	 * Symbols hit rate in base game.
 	 */
-	private static long[][] baseGameSymbolsHitRate = {
-
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-	};
+	private static long[][] baseGameSymbolsHitRate = {};
 
 	/**
 	 * Symbols win hit rate in base game.
 	 */
-	private static long[][] freeSymbolMoney = {
-
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-	};
+	private static long[][] freeSymbolMoney = {};
 
 	/**
 	 * Symbols hit rate in base game.
 	 */
-	private static long[][] freeGameSymbolsHitRate = {
-
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			//
-			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-	};
+	private static long[][] freeGameSymbolsHitRate = {};
 
 	/**
 	 * Data initializer.
@@ -349,6 +293,15 @@ public class Main {
 		 * Calculate total bet.
 		 */
 		totalBet = singleLineBet * lines.length;
+
+		/*
+		 * Allocate memory for the counters.
+		 */
+		baseSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
+		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
+		freeSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
+		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
+		// TODO Counters should be initialized with zeros.
 	}
 
 	/**
@@ -908,19 +861,8 @@ public class Main {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = {
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			};
+			int[][] counters = new int[paytable.length][SYMBOLS_NAMES.size()];
+			// TODO Counters should be initialized with zeros.
 			for (int i = 0; baseReels != null && i < baseReels.length; i++) {
 				for (int j = 0; j < baseReels[i].length; j++) {
 					counters[i][baseReels[i][j]]++;
@@ -958,19 +900,8 @@ public class Main {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = {
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-					new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			};
+			int[][] counters = new int[paytable.length][SYMBOLS_NAMES.size()];
+			// TODO Counters should be initialized with zeros.
 			for (int i = 0; freeReels != null && i < freeReels.length; i++) {
 				for (int j = 0; j < freeReels[i].length; j++) {
 					counters[i][freeReels[i][j]]++;
@@ -1552,8 +1483,6 @@ public class Main {
 			} catch (Exception e) {
 			}
 		}
-		System.err.println(numberOfSimulations);
-		System.err.println(progressPrintOnIteration);
 
 		/*
 		 * Calculate all combinations in base game.
@@ -1612,5 +1541,4 @@ public class Main {
 		printStatistics();
 		System.out.println("********************************************************************************");
 	}
-
 }
