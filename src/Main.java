@@ -85,14 +85,19 @@ public class Main {
 	private static int[][] lines = {};
 
 	/**
+	 * Target RTP percent.
+	 */
+	private static double targetRtp = 0;
+
+	/**
 	 * Stips in the base game as symbols names.
 	 */
-	private static final String[][] BASE_REELS = {};
+	private static String[][] baseStrips = {};
 
 	/**
 	 * Stips in the free spins as symbols names.
 	 */
-	private static final String[][] FREE_REELS = {};
+	private static String[][] freeStrips = {};
 
 	/**
 	 * Stips in base game.
@@ -127,17 +132,17 @@ public class Main {
 	/**
 	 * If scatter win is presented on the screen.
 	 */
-	private static int scatterMultiplier = 1;
+	private static int scatterMultiplier = 0;
 
 	/**
 	 * Total bet in single base game spin.
 	 */
-	private static int singleLineBet = 1;
+	private static int singleLineBet = 0;
 
 	/**
 	 * Total bet in single base game spin.
 	 */
-	private static int totalBet = singleLineBet * lines.length;
+	private static int totalBet = 0;
 
 	/**
 	 * Free spins to be played.
@@ -229,17 +234,17 @@ public class Main {
 	 */
 	private static long[][] baseSymbolMoney = {
 
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 
 	};
 
@@ -248,17 +253,17 @@ public class Main {
 	 */
 	private static long[][] baseGameSymbolsHitRate = {
 
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 
 	};
 
@@ -267,17 +272,17 @@ public class Main {
 	 */
 	private static long[][] freeSymbolMoney = {
 
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 
 	};
 
@@ -286,39 +291,63 @@ public class Main {
 	 */
 	private static long[][] freeGameSymbolsHitRate = {
 
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-
-			new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+			//
+			// new long[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 
 	};
 
-	/*
-	 * Static data initializer.
+	/**
+	 * Data initializer.
+	 *
+	 * @author Todor Balabanov
 	 */
-	static {
+	private static void initialize() {
 		/*
 		 * Transform symbols names to integer values.
 		 */
-		baseReels = new int[BASE_REELS.length][];
-		for (int i = 0; i < BASE_REELS.length; i++) {
-			baseReels[i] = new int[BASE_REELS[i].length];
-			for (int j = 0; j < BASE_REELS[i].length; j++) {
+		baseReels = new int[baseStrips.length][];
+		for (int i = 0; i < baseStrips.length; i++) {
+			baseReels[i] = new int[baseStrips[i].length];
+			for (int j = 0; j < baseStrips[i].length; j++) {
 				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
-					if (SYMBOLS_NAMES.get(s).trim().equals(BASE_REELS[i][j].trim()) == true) {
+					if (SYMBOLS_NAMES.get(s).trim().equals(baseStrips[i][j].trim()) == true) {
 						baseReels[i][j] = s;
 						break;
 					}
 				}
 			}
 		}
+
+		/*
+		 * Initialize view with no symbols.
+		 */
+		for (int i = 0; i < view.length; i++) {
+			for (int j = 0; j < view[i].length; j++) {
+				view[i][j] = NO_SYMBOL_INDEX;
+			}
+		}
+
+		/*
+		 * Adjust multipliers.
+		 */
+		freeGamesMultiplier = 0;
+		wildInLineMultiplier = 0;
+		scatterMultiplier = 1;
+		singleLineBet = 1;
+
+		/*
+		 * Calculate total bet.
+		 */
+		totalBet = singleLineBet * lines.length;
 	}
 
 	/**
@@ -350,6 +379,7 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static void spin(int[][] reels) {
+		// TODO Adapt it for games with more than 3 rows.
 		for (int i = 0, b, a, c; i < view.length && i < reels.length; i++) {
 			if (bruteForce == true) {
 				a = reelsStops[i];
@@ -1139,10 +1169,12 @@ public class Main {
 	 * 
 	 * @param inputFileName
 	 *            Name of the input file.
-	 * @param reelsSheetName
-	 *            Name of the reels sheet.
+	 * @param baseReelsSheetName
+	 *            Name of the base game reels sheet.
+	 * @param freeReelsSheetName
+	 *            Name of the free spins reels sheet.
 	 */
-	private static void loadGameStructure(String inputFileName, String reelsSheetName) {
+	private static void loadGameStructure(String inputFileName, String baseReelsSheetName, String freeReelsSheetName) {
 		XSSFWorkbook workbook = null;
 		try {
 			workbook = new XSSFWorkbook(new FileInputStream(new File(inputFileName)));
@@ -1157,24 +1189,26 @@ public class Main {
 		 * Load common game information.
 		 */
 		sheet = workbook.getSheet("Summary");
-		int numberOfReels = Integer.valueOf(sheet.getRow(1).getCell(1).getRawValue());
-		int numberOfRows = Integer.valueOf(sheet.getRow(2).getCell(1).getRawValue());
-		int numberOfLines = Integer.valueOf(sheet.getRow(3).getCell(1).getRawValue());
-		int numberOfSymbols = Integer.valueOf(sheet.getRow(4).getCell(1).getRawValue());
-		double rtp = Double.valueOf(sheet.getRow(5).getCell(1).getRawValue());
+		int numberOfReels = (int) sheet.getRow(1).getCell(1).getNumericCellValue();
+		int numberOfRows = (int) sheet.getRow(2).getCell(1).getNumericCellValue();
+		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
+		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
+		double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
 
 		/*
 		 * Store all symbol names and mark special like wilds and scatters.
 		 */
+		WILD_INDICES.clear();
+		SCATTER_INDICES.clear();
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
 			SYMBOLS_NAMES.add(sheet.getRow(s).getCell(0).getStringCellValue());
 
-			if (sheet.getRow(s).getCell(0).getRawValue().equals("Wild")) {
+			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Wild") == true) {
 				WILD_INDICES.add(s - 1);
 			}
 
-			if (sheet.getRow(s).getCell(0).getRawValue().equals("Scatter") == true) {
+			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Scatter") == true) {
 				SCATTER_INDICES.add(s - 1);
 			}
 		}
@@ -1186,7 +1220,7 @@ public class Main {
 		paytable = new int[numberOfReels + 1][numberOfSymbols];
 		for (int r = 1; r <= numberOfSymbols; r++) {
 			for (int c = 1; c <= numberOfReels; c++) {
-				paytable[c][r - 1] = Integer.valueOf(sheet.getRow(r).getCell(numberOfReels - c + 1).getRawValue());
+				paytable[c][r - 1] = (int) (sheet.getRow(r).getCell(numberOfReels - c + 1).getNumericCellValue());
 			}
 		}
 
@@ -1206,16 +1240,66 @@ public class Main {
 			}
 		}
 
-		// TODO Read all input file data sheets.
+		/*
+		 * Load base game reels.
+		 */
+		sheet = workbook.getSheet(baseReelsSheetName);
+		baseStrips = new String[numberOfReels][];
+		for (int c = 0; c < baseStrips.length; c++) {
+			/*
+			 * Calculate length of the reel.
+			 */
+			int length = 0;
+			for (int r = 0; true; r++) {
+				try {
+					sheet.getRow(r).getCell(c).getStringCellValue();
+				} catch (Exception e) {
+					break;
+				}
 
-		view = new int[numberOfReels][numberOfRows];
-		for (int i = 0; i < view.length; i++) {
-			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = NO_SYMBOL_INDEX;
+				length++;
+			}
+
+			/*
+			 * Read the reel itself.
+			 */
+			baseStrips[c] = new String[length];
+			for (int r = 0; r < baseStrips[c].length; r++) {
+				baseStrips[c][r] = sheet.getRow(r).getCell(c).getStringCellValue();
 			}
 		}
 
-		totalBet = singleLineBet * lines.length;
+		/*
+		 * Load free spins reels.
+		 */
+		sheet = workbook.getSheet(freeReelsSheetName);
+		freeStrips = new String[numberOfReels][];
+		for (int c = 0; c < freeStrips.length; c++) {
+			/*
+			 * Calculate length of the reel.
+			 */
+			int length = 0;
+			for (int r = 0; true; r++) {
+				try {
+					sheet.getRow(r).getCell(c).getStringCellValue();
+				} catch (Exception e) {
+					break;
+				}
+
+				length++;
+			}
+
+			/*
+			 * Read the reel itself.
+			 */
+			freeStrips[c] = new String[length];
+			for (int r = 0; r < freeStrips[c].length; r++) {
+				freeStrips[c][r] = sheet.getRow(r).getCell(c).getStringCellValue();
+			}
+		}
+
+		view = new int[numberOfReels][numberOfRows];
+		initialize();
 	}
 
 	/**
@@ -1227,10 +1311,12 @@ public class Main {
 	/**
 	 * Application single entry point method.
 	 * 
-	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -reels "Reels 92 RTP"
+	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base Reels
+	 * 95.5 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
+	 * 
 	 * @throws ParseException
 	 *             When there is a problem with command line arguments.
 	 */
@@ -1250,8 +1336,10 @@ public class Main {
 		options.addOption(Option.builder("input").argName("file").hasArg().valueSeparator()
 				.desc("Input Excel file name.").build());
 
-		options.addOption(Option.builder("reels").argName("sheet").hasArg().valueSeparator()
-				.desc("Excel sheet name with reels.").build());
+		options.addOption(Option.builder("basereels").argName("sheet").hasArg().valueSeparator()
+				.desc("Excel sheet name with base game reels.").build());
+		options.addOption(Option.builder("freereels").argName("sheet").hasArg().valueSeparator()
+				.desc("Excel sheet name with free spins reels.").build());
 
 		options.addOption(Option.builder("g").longOpt("generations").argName("number").hasArg().valueSeparator()
 				.desc("Number of games (default 20m).").build());
@@ -1298,13 +1386,13 @@ public class Main {
 		}
 
 		/*
-		 * Read reels sheet name.
+		 * Base game reels sheet name.
 		 */
-		String reelsSheetName = "";
-		if (commands.hasOption("reels") == true) {
-			reelsSheetName = commands.getOptionValue("reels");
+		String baseReelsSheetName = "";
+		if (commands.hasOption("basereels") == true) {
+			baseReelsSheetName = commands.getOptionValue("basereels");
 		} else {
-			System.out.println("Reels sheet name is missing!");
+			System.out.println("Base game reels sheet name is missing!");
 			System.out.println();
 			(new HelpFormatter()).printHelp("java Main", options, true);
 			System.out.println();
@@ -1312,9 +1400,17 @@ public class Main {
 		}
 
 		/*
+		 * Base game reels sheet name.
+		 */
+		String freeReelsSheetName = "";
+		if (commands.hasOption("freereels") == true) {
+			freeReelsSheetName = commands.getOptionValue("freereels");
+		}
+
+		/*
 		 * Reading of input file and reels data sheet.
 		 */
-		loadGameStructure(inputFileName, reelsSheetName);
+		loadGameStructure(inputFileName, baseReelsSheetName, freeReelsSheetName);
 
 		/*
 		 * Generate initial reels according paytable values.
