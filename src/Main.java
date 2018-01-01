@@ -1127,7 +1127,7 @@ public class Main {
 		int numberOfRows = (int) sheet.getRow(2).getCell(1).getNumericCellValue();
 		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
 		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
-		double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
+		//double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
 
 		/*
 		 * Store all symbol names and mark special like wilds and scatters.
