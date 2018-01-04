@@ -231,6 +231,11 @@ public class Main {
 	private static boolean bruteForce = false;
 
 	/**
+	 * Number of bins used in the histogram.
+	 */
+	private static int numberOfBins = 10;
+
+	/**
 	 * Symbols win hit rate in base game.
 	 */
 	private static long[][] baseSymbolMoney = {};
@@ -249,6 +254,21 @@ public class Main {
 	 * Symbols hit rate in base game.
 	 */
 	private static long[][] freeGameSymbolsHitRate = {};
+
+	/**
+	 * Distribution of the wins according their amount in the base game.
+	 */
+	private static long baseWinsHistogram[] = {};
+
+	/**
+	 * Distribution of the wins according their amount in the free spins.
+	 */
+	private static long freeWinsHistogram[] = {};
+
+	/**
+	 * Highest win according pay table. It is used in wins histogram calculations.
+	 */
+	private static int highestPaytableWin = 0;
 
 	/**
 	 * Data initializer.
@@ -301,7 +321,21 @@ public class Main {
 		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
 		freeSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
 		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
+		baseWinsHistogram = new long[numberOfBins];
+		freeWinsHistogram = new long[numberOfBins];
 		// TODO Counters should be initialized with zeros.
+
+		/*
+		 * Calculate highest win according total bet and pay table values.
+		 */
+		highestPaytableWin = 0;
+		for (int i = 0; i < paytable.length; i++) {
+			for (int j = 0; j < paytable[i].length; j++) {
+				if (highestPaytableWin < paytable[i][j]) {
+					highestPaytableWin = paytable[i][j];
+				}
+			}
+		}
 	}
 
 	/**
@@ -648,6 +682,28 @@ public class Main {
 	}
 
 	/**
+	 * Update histogram information when there is a win.
+	 * 
+	 * @param histogram
+	 *            Histogram array.
+	 * @param win
+	 *            Win value.
+	 */
+	private static void updateHistogram(long[] histogram, int win) {
+		/*
+		 * If the win is bigger than highest according pay table values mark it in the
+		 * last bin.
+		 */
+		if (win >= highestPaytableWin) {
+			histogram[histogram.length - 1]++;
+			return;
+		}
+
+		int index = histogram.length * win / highestPaytableWin;
+		histogram[index]++;
+	}
+
+	/**
 	 * Play single free spin game.
 	 *
 	 * @author Todor Balabanov
@@ -731,6 +787,13 @@ public class Main {
 		 */
 		if (win > 0) {
 			baseGameHitRate++;
+		}
+
+		/*
+		 * Count in the histogram.
+		 */
+		if (win > 0) {
+			updateHistogram(baseWinsHistogram, win);
 		}
 
 		/*
@@ -1013,6 +1076,18 @@ public class Main {
 			}
 			System.out.println();
 		}
+		System.out.println();
+		System.out.println("Base Game Wins Histogram:");
+		for (int i = 0; i < baseWinsHistogram.length; i++) {
+			System.out.print(baseWinsHistogram[i] + "\t");
+		}
+		System.out.println();
+		for (int i = 0, bin = highestPaytableWin
+				/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin
+						/ baseWinsHistogram.length) {
+			System.out.print("< " + bin + "\t");
+		}
+		System.out.println();
 
 		System.out.println();
 		System.out.println("Free Games Symbols RTP:");
@@ -1127,7 +1202,7 @@ public class Main {
 		int numberOfRows = (int) sheet.getRow(2).getCell(1).getNumericCellValue();
 		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
 		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
-		//double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
+		// double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
 
 		/*
 		 * Store all symbol names and mark special like wilds and scatters.
@@ -1343,6 +1418,9 @@ public class Main {
 		options.addOption(Option.builder("p").longOpt("progress").argName("number").hasArg().valueSeparator()
 				.desc("Progress on each iteration number (default 1m).").build());
 
+		options.addOption(Option.builder("histogram").argName("size").hasArg().valueSeparator()
+				.desc("Histograms of the wins with particular number of bins (size).").build());
+
 		options.addOption(Option.builder("initial").argName("number").hasArg().valueSeparator()
 				.desc("Generate initial reels according paytable values and reel target length.").build());
 
@@ -1404,6 +1482,13 @@ public class Main {
 		String freeReelsSheetName = "";
 		if (commands.hasOption("freereels") == true) {
 			freeReelsSheetName = commands.getOptionValue("freereels");
+		}
+
+		/*
+		 * Number of bins used in the wins histogram.
+		 */
+		if (commands.hasOption("histogram") == true) {
+			numberOfBins = Integer.valueOf(commands.getOptionValue("histogram"));
 		}
 
 		/*
