@@ -233,7 +233,7 @@ public class Main {
 	/**
 	 * Number of bins used in the histogram.
 	 */
-	private static int numberOfBins = 10;
+	private static int numberOfBins = 1000;
 
 	/**
 	 * Symbols win hit rate in base game.
@@ -686,20 +686,22 @@ public class Main {
 	 * 
 	 * @param histogram
 	 *            Histogram array.
+	 * @param biggest
+	 *            Expected biggest win.
 	 * @param win
 	 *            Win value.
 	 */
-	private static void updateHistogram(long[] histogram, int win) {
+	private static void updateHistogram(long[] histogram, int biggest, int win) {
 		/*
 		 * If the win is bigger than highest according pay table values mark it in the
 		 * last bin.
 		 */
-		if (win >= highestPaytableWin) {
+		if (win >= biggest) {
 			histogram[histogram.length - 1]++;
 			return;
 		}
 
-		int index = histogram.length * win / highestPaytableWin;
+		int index = histogram.length * win / biggest;
 		histogram[index]++;
 	}
 
@@ -793,7 +795,7 @@ public class Main {
 		 * Count in the histogram.
 		 */
 		if (win > 0) {
-			updateHistogram(baseWinsHistogram, win);
+			updateHistogram(baseWinsHistogram, highestPaytableWin * totalBet, win);
 		}
 
 		/*
@@ -1078,12 +1080,18 @@ public class Main {
 		}
 		System.out.println();
 		System.out.println("Base Game Wins Histogram:");
+		double sum = 0;
 		for (int i = 0; i < baseWinsHistogram.length; i++) {
 			System.out.print(baseWinsHistogram[i] + "\t");
+			sum += baseWinsHistogram[i];
 		}
 		System.out.println();
-		for (int i = 0, bin = highestPaytableWin
-				/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin
+		for (int i = 0; i < baseWinsHistogram.length; i++) {
+			System.out.print(100D*baseWinsHistogram[i]/sum + "\t");
+		}
+		System.out.println();
+		for (int i = 0, bin = highestPaytableWin * totalBet
+				/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
 						/ baseWinsHistogram.length) {
 			System.out.print("< " + bin + "\t");
 		}
@@ -1419,7 +1427,7 @@ public class Main {
 				.desc("Progress on each iteration number (default 1m).").build());
 
 		options.addOption(Option.builder("histogram").argName("size").hasArg().valueSeparator()
-				.desc("Histograms of the wins with particular number of bins (size).").build());
+				.desc("Histograms of the wins with particular number of bins (default 1000).").build());
 
 		options.addOption(Option.builder("initial").argName("number").hasArg().valueSeparator()
 				.desc("Generate initial reels according paytable values and reel target length.").build());
