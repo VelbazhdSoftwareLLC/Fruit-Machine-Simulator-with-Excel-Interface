@@ -166,9 +166,19 @@ public class Main {
 	private static long baseMoney = 0L;
 
 	/**
+	 * All values as win in the base game (even zeros) for the whole simulation.
+	 */
+	private static List<Integer> baseOutcomes = new ArrayList<Integer>();
+
+	/**
 	 * Total amount of won money in free spins.
 	 */
 	private static long freeMoney = 0L;
+
+	/**
+	 * All values as win in the free spins (even zeros) for the whole simulation.
+	 */
+	private static List<Integer> freeOutcomes = new ArrayList<Integer>();
 
 	/**
 	 * Max amount of won money in base game.
@@ -336,6 +346,9 @@ public class Main {
 				}
 			}
 		}
+
+		baseOutcomes.clear();
+		freeOutcomes.clear();
 	}
 
 	/**
@@ -731,6 +744,13 @@ public class Main {
 		win *= freeGamesMultiplier;
 
 		/*
+		 * Keep values for mathematical expectation and standard deviation calculation.
+		 */
+		freeOutcomes.add(win);
+		// TODO Calculation of mathematical expectation and standard deviation is
+		// differenet.
+
+		/*
 		 * Add win to the statistics.
 		 */
 		freeMoney += win;
@@ -776,6 +796,13 @@ public class Main {
 		int win = linesWin(view) + scatterWin(view);
 
 		/*
+		 * Keep values for mathematical expectation and standard deviation calculation.
+		 */
+		baseOutcomes.add(win);
+		// TODO Calculation of mathematical expectation and standard deviation is
+		// differenet.
+
+		/*
 		 * Add win to the statistics.
 		 */
 		baseMoney += win;
@@ -817,7 +844,7 @@ public class Main {
 	}
 
 	/**
-	 * Print aobut information.
+	 * Print about information.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -1080,20 +1107,48 @@ public class Main {
 		}
 		System.out.println();
 		System.out.println("Base Game Wins Histogram:");
-		double sum = 0;
-		for (int i = 0; i < baseWinsHistogram.length; i++) {
-			System.out.print(baseWinsHistogram[i] + "\t");
-			sum += baseWinsHistogram[i];
+		/* Histogram. */ {
+			double sum = 0;
+			for (int i = 0; i < baseWinsHistogram.length; i++) {
+				System.out.print(baseWinsHistogram[i] + "\t");
+				sum += baseWinsHistogram[i];
+			}
+			System.out.println();
+			for (int i = 0; i < baseWinsHistogram.length; i++) {
+				System.out.print(100D * baseWinsHistogram[i] / sum + "\t");
+			}
+			System.out.println();
+			for (int i = 0, bin = highestPaytableWin * totalBet
+					/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
+							/ baseWinsHistogram.length) {
+				System.out.print("< " + bin + "\t");
+			}
 		}
 		System.out.println();
-		for (int i = 0; i < baseWinsHistogram.length; i++) {
-			System.out.print(100D*baseWinsHistogram[i]/sum + "\t");
+		System.out.print("Base Game Win Mean:\t");
+		/* Mean */ {
+			double mean = 0;
+			for (Integer value : baseOutcomes) {
+				mean += value;
+			}
+			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+			System.out.println(mean);
 		}
-		System.out.println();
-		for (int i = 0, bin = highestPaytableWin * totalBet
-				/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
-						/ baseWinsHistogram.length) {
-			System.out.print("< " + bin + "\t");
+		System.out.print("Base Game Win Standard Deviation:\t");
+		/* Standard Deviation */ {
+			double mean = 0;
+			for (Integer value : baseOutcomes) {
+				mean += value;
+			}
+			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+
+			double deviation = 0;
+			for (Integer value : baseOutcomes) {
+				deviation += (value - mean) * (value - mean);
+			}
+			deviation /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+			deviation = Math.sqrt(deviation);
+			System.out.println(deviation);
 		}
 		System.out.println();
 
@@ -1139,6 +1194,52 @@ public class Main {
 			}
 			System.out.println();
 		}
+		System.out.println();
+		System.out.println("Free Games Wins Histogram:");
+		/* Histogram. */ {
+			double sum = 0;
+			for (int i = 0; i < freeWinsHistogram.length; i++) {
+				System.out.print(freeWinsHistogram[i] + "\t");
+				sum += freeWinsHistogram[i];
+			}
+			System.out.println();
+			for (int i = 0; i < freeWinsHistogram.length; i++) {
+				System.out.print(100D * freeWinsHistogram[i] / sum + "\t");
+			}
+			System.out.println();
+			for (int i = 0, bin = highestPaytableWin * totalBet
+					/ freeWinsHistogram.length; i < freeWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
+							/ freeWinsHistogram.length) {
+				System.out.print("< " + bin + "\t");
+			}
+		}
+		System.out.println();
+		System.out.print("Free Games Win Mean:\t");
+		/* Mean */ {
+			double mean = 0;
+			for (Integer value : freeOutcomes) {
+				mean += value;
+			}
+			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+			System.out.println(mean);
+		}
+		System.out.print("Free Games Win Standard Deviation:\t");
+		/* Standard Deviation */ {
+			double mean = 0;
+			for (Integer value : freeOutcomes) {
+				mean += value;
+			}
+			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+
+			double deviation = 0;
+			for (Integer value : freeOutcomes) {
+				deviation += (value - mean) * (value - mean);
+			}
+			deviation /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+			deviation = Math.sqrt(deviation);
+			System.out.println(deviation);
+		}
+		System.out.println();
 	}
 
 	/**
@@ -1231,7 +1332,7 @@ public class Main {
 		}
 
 		/*
-		 * Load paytable.
+		 * Load pay table.
 		 */
 		sheet = workbook.getSheet("Paytable");
 		paytable = new int[numberOfReels + 1][numberOfSymbols];
