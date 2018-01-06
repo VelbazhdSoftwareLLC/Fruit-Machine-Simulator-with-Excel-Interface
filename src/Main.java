@@ -25,7 +25,6 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -747,8 +746,6 @@ public class Main {
 		 * Keep values for mathematical expectation and standard deviation calculation.
 		 */
 		freeOutcomes.add(win);
-		// TODO Calculation of mathematical expectation and standard deviation is
-		// differenet.
 
 		/*
 		 * Add win to the statistics.
@@ -799,8 +796,6 @@ public class Main {
 		 * Keep values for mathematical expectation and standard deviation calculation.
 		 */
 		baseOutcomes.add(win);
-		// TODO Calculation of mathematical expectation and standard deviation is
-		// differenet.
 
 		/*
 		 * Add win to the statistics.
