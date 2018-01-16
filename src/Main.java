@@ -132,7 +132,7 @@ public class Main {
 	/**
 	 * If scatter win is presented on the screen.
 	 */
-	private static int scatterMultiplier = 0;
+	private static double scatterMultiplier = 0;
 
 	/**
 	 * Total bet in single base game spin.
@@ -315,7 +315,6 @@ public class Main {
 		 */
 		freeGamesMultiplier = 0;
 		wildInLineMultiplier = 0;
-		scatterMultiplier = 1;
 		singleLineBet = 1;
 
 		/*
@@ -1307,6 +1306,7 @@ public class Main {
 		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
 		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
 		// double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
+		scatterMultiplier = sheet.getRow(7).getCell(1).getNumericCellValue();
 
 		/*
 		 * Store all symbol names and mark special like wilds and scatters.
