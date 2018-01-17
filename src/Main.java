@@ -29,9 +29,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -52,7 +53,7 @@ public class Main {
 	/**
 	 * Pseudo-random number generator.
 	 */
-	private static final Random PRNG = new Random();
+	private static final RandomGenerator PRNG = new MersenneTwister();
 
 	/**
 	 * Index of the none symbol in the array of symbols.
