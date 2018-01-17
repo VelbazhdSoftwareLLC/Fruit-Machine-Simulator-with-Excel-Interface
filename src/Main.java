@@ -1491,6 +1491,9 @@ public class Main {
 	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base Reels
 	 * 95.5 RTP"
 	 * 
+	 * -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000 -freeoff -basereels
+	 * "Base Reels 95.5 RTP"
+	 * 
 	 * @param args
 	 *            Command line arguments.
 	 * 
