@@ -25,6 +25,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -379,24 +380,22 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static void spin(int[][] reels) {
-		// TODO Adapt it for games with more than 3 rows.
-		for (int i = 0, b, a, c; i < view.length && i < reels.length; i++) {
+		for (int i = 0; i < view.length && i < reels.length; i++) {
+			int column[] = new int[view[i].length];
+
 			if (bruteForce == true) {
-				a = reelsStops[i];
-				b = a + 1;
-				c = a + 2;
+				column[0] = reelsStops[i];
 			} else {
-				a = PRNG.nextInt(reels[i].length);
-				b = a + 1;
-				c = a + 2;
+				column[0] = PRNG.nextInt(reels[i].length);
 			}
 
-			b = b % reels[i].length;
-			c = c % reels[i].length;
+			for (int c = 1; c < column.length; c++) {
+				column[c] = (column[0] + c) % reels[i].length;
+			}
 
-			view[i][0] = reels[i][a];
-			view[i][1] = reels[i][b];
-			view[i][2] = reels[i][c];
+			for (int j = 0; j < view[i].length; j++) {
+				view[i][j] = reels[i][column[j]];
+			}
 		}
 	}
 
