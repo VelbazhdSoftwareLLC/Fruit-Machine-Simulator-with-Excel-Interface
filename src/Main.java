@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1415,7 +1416,10 @@ public class Main {
 	}
 
 	/**
-	 * Generate initial reels according paytable values.
+	 * Generate initial reels according pay table values.
+	 * 
+	 * @param targetLength
+	 *            Initial desired length of the reels.
 	 */
 	private static void initialReels(int targetLength) {
 		/*
@@ -1485,13 +1489,128 @@ public class Main {
 	}
 
 	/**
+	 * Shuffle loaded reals in stack of symbols.
+	 * 
+	 * @param stackSize
+	 *            Size of the stack. If it is one there is no stack and it is
+	 *            regular shuffling.
+	 */
+	private static void shuffleReels(int stackSize) {
+		/*
+		 * Stack of symbols can not be negative or zero.
+		 */
+		if (stackSize < 1) {
+			stackSize = 1;
+		}
+
+		/*
+		 * Handle each reel by itself.
+		 */
+		for (int reel = 0; reel < baseStrips.length; reel++) {
+			/*
+			 * Reel should be sorted first in order to form stacked groups.
+			 */
+			List<String> sortedReel = Arrays.asList(baseStrips[reel]);
+			Collections.sort(sortedReel);
+
+			/*
+			 * Form structures to hold groups.
+			 */
+			List<List<String>> stacks = new ArrayList<>();
+			List<String> current = new ArrayList<String>();
+			stacks.add(current);
+
+			/*
+			 * Form groups.
+			 */
+			for (String symbol : sortedReel) {
+				/*
+				 * If the group is empty just add the symbol.
+				 */
+				if (current.isEmpty() == true) {
+					current.add(symbol);
+					continue;
+				}
+
+				/*
+				 * If the group is full create and add new group.
+				 */
+				if (current.size() >= stackSize) {
+					current = new ArrayList<String>();
+					stacks.add(current);
+				}
+
+				/*
+				 * If the next symbol is different than the symbols in the current group create
+				 * and add new group.
+				 */
+				if (current.contains(symbol) == false) {
+					current = new ArrayList<String>();
+					stacks.add(current);
+				}
+
+				/*
+				 * Add the symbol to the current group.
+				 */
+				current.add(symbol);
+			}
+
+			/*
+			 * If there are empty groups remove them.
+			 */
+			for (int i = stacks.size() - 1; i >= 0; i--) {
+				if (stacks.get(i).size() == 0) {
+					stacks.remove(i);
+				}
+			}
+
+			/*
+			 * Do the real shuffling until there is no same groups next to each other.
+			 */
+			boolean fine;
+			do {
+				Collections.shuffle(stacks);
+
+				/*
+				 * Check all groups which are next to each other.
+				 */
+				fine = true;
+				for (int i = 0; i < stacks.size() - 1; i++) {
+					List<String> left = stacks.get(i);
+					List<String> right = stacks.get(i + 1);
+
+					/*
+					 * If first symbols in the groups are equal it means that shuffling should be
+					 * done once again.
+					 */
+					if (left.get(0).equals(right.get(0)) == true) {
+						fine = false;
+						break;
+					}
+				}
+			} while (fine == false);
+
+			/*
+			 * Put symbols back to the original reel.
+			 */
+			int position = 0;
+			for (List<String> group : stacks) {
+				for (String symbol : group) {
+					baseStrips[reel][position] = symbol;
+					position++;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Application single entry point method.
 	 * 
 	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base Reels
 	 * 95.5 RTP"
 	 * 
-	 * -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000 -freeoff -basereels
-	 * "Base Reels 95.5 RTP"
+	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000 -freeoff
+	 * -basereels "Base Reels 95.5 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
@@ -1530,6 +1649,8 @@ public class Main {
 
 		options.addOption(Option.builder("initial").argName("number").hasArg().valueSeparator()
 				.desc("Generate initial reels according paytable values and reel target length.").build());
+		options.addOption(Option.builder("shuffle").argName("number").hasArg().valueSeparator()
+				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).").build());
 
 		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
@@ -1605,10 +1726,20 @@ public class Main {
 		initialize();
 
 		/*
-		 * Generate initial reels according paytable values.
+		 * Generate initial reels according pay table values.
 		 */
 		if (commands.hasOption("initial") == true) {
 			initialReels(Integer.valueOf(commands.getOptionValue("initial")));
+			initialize();
+			printDataStructures();
+			System.exit(0);
+		}
+
+		/*
+		 * Shuffle loaded reels with stacked size value.
+		 */
+		if (commands.hasOption("shuffle") == true) {
+			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")));
 			initialize();
 			printDataStructures();
 			System.exit(0);
