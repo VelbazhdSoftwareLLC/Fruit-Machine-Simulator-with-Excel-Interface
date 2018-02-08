@@ -1469,7 +1469,6 @@ public class Main {
 				min = values[symbol];
 			}
 		}
-		System.err.println(Arrays.toString(values));
 
 		/*
 		 * Estimate amount of each symbol on the reel.
@@ -1480,7 +1479,6 @@ public class Main {
 			total += values[symbol];
 		}
 		double fixLength = targetLength / total;
-		System.err.println("Test point 4 ...");
 
 		/*
 		 * Fix the length if it is too big.
@@ -1491,7 +1489,6 @@ public class Main {
 			values[symbol] = Math.ceil(values[symbol]);
 			total += values[symbol];
 		}
-		System.err.println("Test point 5 ...");
 
 		/*
 		 * Populate initial reels.
@@ -1505,7 +1502,6 @@ public class Main {
 				level++;
 			}
 		}
-		System.err.println("Test point 6 ...");
 	}
 
 	/**
