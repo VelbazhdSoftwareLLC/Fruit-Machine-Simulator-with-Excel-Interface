@@ -1,7 +1,7 @@
 
 /*==============================================================================
 *                                                                              *
-* Fruit Machine Simulator with Excel Interface version 0.0.1                   *
+* Fruit Machine Simulator with Excel Interface version 1.0.0                   *
 * Copyrights (C) 2017 Velbazhd Software LLC                                    *
 *                                                                              *
 * developed by Todor Balabanov ( todor.balabanov@gmail.com )                   *
@@ -236,6 +236,11 @@ public class Main {
 	 * Wild substitution flag.
 	 */
 	private static boolean wildsOff = false;
+
+	/**
+	 * Burning Hot style of wild expansion flag.
+	 */
+	private static boolean burningHotWilds = false;
 
 	/**
 	 * Brute force all winning combinations in base game only flag.
@@ -787,6 +792,10 @@ public class Main {
 		 */
 		spin(baseReels);
 
+		// TODO Do Burning Hot style wilds expansion.
+		if (burningHotWilds == true) {
+		}
+
 		/*
 		 * Win accumulated by lines.
 		 */
@@ -948,7 +957,7 @@ public class Main {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length][SYMBOLS_NAMES.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; baseReels != null && i < baseReels.length; i++) {
 				for (int j = 0; j < baseReels[i].length; j++) {
@@ -987,7 +996,7 @@ public class Main {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length][SYMBOLS_NAMES.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; freeReels != null && i < freeReels.length; i++) {
 				for (int j = 0; j < freeReels[i].length; j++) {
@@ -1446,6 +1455,13 @@ public class Main {
 		 */
 		double min = 1;
 		for (int symbol = 0; symbol < values.length; symbol++) {
+			/*
+			 * Zeros are not applicable for symbols distribution calculation.
+			 */
+			if (values[symbol] == 0) {
+				continue;
+			}
+
 			values[symbol] /= total;
 			values[symbol] = 1 / values[symbol];
 
@@ -1453,6 +1469,7 @@ public class Main {
 				min = values[symbol];
 			}
 		}
+		System.err.println(Arrays.toString(values));
 
 		/*
 		 * Estimate amount of each symbol on the reel.
@@ -1463,6 +1480,7 @@ public class Main {
 			total += values[symbol];
 		}
 		double fixLength = targetLength / total;
+		System.err.println("Test point 4 ...");
 
 		/*
 		 * Fix the length if it is too big.
@@ -1473,6 +1491,7 @@ public class Main {
 			values[symbol] = Math.ceil(values[symbol]);
 			total += values[symbol];
 		}
+		System.err.println("Test point 5 ...");
 
 		/*
 		 * Populate initial reels.
@@ -1486,6 +1505,7 @@ public class Main {
 				level++;
 			}
 		}
+		System.err.println("Test point 6 ...");
 	}
 
 	/**
@@ -1655,6 +1675,7 @@ public class Main {
 		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
+		options.addOption(new Option("burninghot", false, "Burning Hot style of wilds expansion."));
 
 		options.addOption(new Option("verbose", false, "Print intermediate results."));
 		options.addOption(new Option("verify", false, "Print input data structures."));
@@ -1765,6 +1786,13 @@ public class Main {
 		 */
 		if (commands.hasOption("wildsoff") == true) {
 			wildsOff = true;
+		}
+
+		/*
+		 * Switch on Burning Hot wilds expansion.
+		 */
+		if (commands.hasOption("burninghot") == true) {
+			burningHotWilds = true;
 		}
 
 		/*
