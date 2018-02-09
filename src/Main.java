@@ -476,6 +476,16 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static int lineWin(int[] line) {
+		/*
+		 * Scatter can not lead win combination.
+		 */
+		if (SCATTER_INDICES.contains(line[0]) == true) {
+			return 0;
+		}
+
+		/*
+		 * Calculate wild win if there is any.
+		 */
 		int[] wildWin = wildLineWin(line);
 
 		/*
@@ -723,6 +733,66 @@ public class Main {
 	}
 
 	/**
+	 * Expand wilds according Burning Hot rules.
+	 * 
+	 * @param view
+	 *            Screen with symbols.
+	 */
+	private static void burningHotWilds(int[][] view) {
+		/*
+		 * Check wins in all possible lines.
+		 */
+		int progress = 0;
+		start: for (int l = 0; l < lines.length; l++) {
+			int[] line = { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX };
+
+			/*
+			 * Prepare line for combination check.
+			 */
+			for (int i = 0; i < line.length; i++) {
+				int index = lines[l][i];
+				line[i] = view[i][index];
+
+				/*
+				 * If current symbol is not wild there is no need to check for a win.
+				 */
+				if (WILD_INDICES.contains(line[i]) == true) {
+					continue;
+				}
+
+				/*
+				 * If current symbol is wild, but there is no win no expansion is done.
+				 */
+				if (lineWin(line) <= 0) {
+					continue;
+				}
+
+				/*
+				 * Continue to not progressed part of the screen.
+				 */
+				if (i <= progress) {
+					continue;
+				}
+
+				/*
+				 * If current symbol is wild and there is a win expansion is done.
+				 */
+				for (int j = 0; j < view[i].length; j++) {
+					view[i][j] = line[i];
+				}
+
+				/*
+				 * Checking should start form the real beginning, but with track of the
+				 * progressed part.
+				 */
+				progress = i;
+				l = -1;
+				continue start;
+			}
+		}
+	}
+
+	/**
 	 * Play single free spin game.
 	 *
 	 * @author Todor Balabanov
@@ -792,8 +862,11 @@ public class Main {
 		 */
 		spin(baseReels);
 
-		// TODO Do Burning Hot style wilds expansion.
+		/*
+		 * Do Burning Hot style wilds expansion.
+		 */
 		if (burningHotWilds == true) {
+			burningHotWilds(view);
 		}
 
 		/*
