@@ -78,6 +78,11 @@ public class Main {
 	private static final List<String> SYMBOLS_NAMES = new ArrayList<String>();
 
 	/**
+	 * List of symbols names.
+	 */
+	private static final List<Integer> SYMBOLS_NUMBERS = new ArrayList<Integer>();
+
+	/**
 	 * Slot game pay table.
 	 */
 	private static int[][] paytable = {};
@@ -1003,6 +1008,13 @@ public class Main {
 					}
 					System.out.print("\t");
 				}
+				System.out.print("\t");
+				for (int i = 0; i < baseReels.length; i++) {
+					if (j < baseReels[i].length) {
+						System.out.print(SYMBOLS_NUMBERS.get(baseReels[i][j]));
+					}
+					System.out.print("\t");
+				}
 				System.out.println();
 			}
 			System.out.println();
@@ -1020,6 +1032,13 @@ public class Main {
 				for (int i = 0; i < freeReels.length; i++) {
 					if (j < freeReels[i].length) {
 						System.out.print(SYMBOLS_NAMES.get(freeReels[i][j]));
+					}
+					System.out.print("\t");
+				}
+				System.out.print("\t");
+				for (int i = 0; i < freeReels.length; i++) {
+					if (j < freeReels[i].length) {
+						System.out.print(SYMBOLS_NUMBERS.get(freeReels[i][j]));
 					}
 					System.out.print("\t");
 				}
@@ -1136,11 +1155,11 @@ public class Main {
 				+ ((double) totalNumberOfFreeGameRestarts / (double) totalNumberOfFreeGameStarts) + "\t\t"
 				+ (100.0D * (double) (totalNumberOfFreeGameRestarts) / (double) totalNumberOfFreeGameStarts) + "%");
 		System.out.println();
+		
 		System.out.println("Max Win in Base Game:\t" + baseMaxWin);
 		System.out.println("Max Win in Free Game:\t" + freeMaxWin);
-
 		System.out.println();
-		System.out.println();
+		
 		System.out.println("Base Game Symbols RTP:");
 		System.out.print("\t");
 		for (int i = 0; i < baseSymbolMoney.length; i++) {
@@ -1229,7 +1248,6 @@ public class Main {
 		}
 		System.out.println();
 
-		System.out.println();
 		System.out.println("Free Games Symbols RTP:");
 		System.out.print("\t");
 		for (int i = 0; i < freeSymbolMoney.length; i++) {
@@ -1316,7 +1334,6 @@ public class Main {
 			deviation = Math.sqrt(deviation);
 			System.out.println(deviation);
 		}
-		System.out.println();
 	}
 
 	/**
@@ -1399,6 +1416,7 @@ public class Main {
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
 			SYMBOLS_NAMES.add(sheet.getRow(s).getCell(0).getStringCellValue());
+			SYMBOLS_NUMBERS.add((int) sheet.getRow(s).getCell(2).getNumericCellValue());
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Wild") == true) {
 				WILD_INDICES.add(s - 1);
