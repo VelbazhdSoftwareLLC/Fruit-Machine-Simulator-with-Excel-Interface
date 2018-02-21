@@ -655,18 +655,30 @@ public class Main {
 
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
-			win += paytable[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
+			double value = paytable[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
+			
+			/*
+			 * If there is no win do nothing.
+			 */
+			if(value <= 0) {
+				continue;
+			}
 
 			/*
 			 * Update statistics.
 			 */
-			if (win > 0 && freeGamesNumber == 0) {
-				baseSymbolMoney[numberOfScatters.get(scatter)][scatter] += win;
+			if (value > 0 && freeGamesNumber == 0) {
+				baseSymbolMoney[numberOfScatters.get(scatter)][scatter] += value;
 				baseGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
-			} else if (win > 0 && freeGamesNumber > 0) {
-				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += win * freeGamesMultiplier;
+			} else if (value > 0 && freeGamesNumber > 0) {
+				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value * freeGamesMultiplier;
 				freeGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
 			}
+			
+			/*
+			 * It is needed if there are more scatter symbols.
+			 */
+			win += value;
 		}
 
 		return (win);
@@ -1351,7 +1363,7 @@ public class Main {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
-				System.out.print(SYMBOLS_NAMES.get(view[i][j]) + "   ");
+				System.out.print(SYMBOLS_NAMES.get(view[i][j]) + "\t");
 			}
 
 			System.out.println();
