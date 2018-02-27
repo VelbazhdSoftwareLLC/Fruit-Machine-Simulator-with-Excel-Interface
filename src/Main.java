@@ -1969,11 +1969,11 @@ public class Main {
 				try {
 					System.out.print(g + " of " + numberOfSimulations);
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", ((double) wonMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f", 100D*((double) wonMoney / (double) lostMoney)));
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", ((double) baseMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f", 100D*((double) baseMoney / (double) lostMoney)));
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", ((double) freeMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f", 100D*((double) freeMoney / (double) lostMoney)));
 				} catch (Exception e) {
 					System.err.println(e);
 				}
