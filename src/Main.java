@@ -385,6 +385,15 @@ public class Main {
 
 		/* Wild symbol passing to find first regular symbol. */
 		for (int i = 0; i < line.length; i++) {
+			if(line[i] == NO_SYMBOL_INDEX) {
+				break;
+			}
+			
+			/* Scatter stops the line. */
+			if (SCATTER_INDICES.contains(line[i]) == true) {
+				break;
+			}
+
 			/* First no wild symbol found. */
 			if (WILD_INDICES.contains(line[i]) == false) {
 				if (SCATTER_INDICES.contains(line[i]) == false) {
@@ -392,15 +401,16 @@ public class Main {
 				}
 				break;
 			}
-
-			/* Scatter stops the line. */
-			if (SCATTER_INDICES.contains(line[i]) == true) {
-				break;
-			}
 		}
 
 		/* Wild symbol substitution. */
 		for (int i = 0; i < line.length && wildsOff == false; i++) {
+			/* Scatter is not substituted. */
+			if (SCATTER_INDICES.contains(line[i]) == true) {
+				continue;
+			}
+			
+			/* Only wilds are substituted. */
 			if (WILD_INDICES.contains(line[i]) == false) {
 				continue;
 			}
