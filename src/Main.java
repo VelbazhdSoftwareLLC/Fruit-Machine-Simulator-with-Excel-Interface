@@ -64,6 +64,9 @@ public class Main {
 	/** Index of the wild symbol in the array of symbols. */
 	private static final Set<Integer> WILD_INDICES = new HashSet<Integer>();
 
+	/** Index of the extend wild symbol in the array of symbols. */
+	private static final Set<Integer> EXTEND_WILD_INDICES = new HashSet<Integer>();
+
 	/** List of symbols names. */
 	private static final List<String> SYMBOLS_NAMES = new ArrayList<String>();
 
@@ -170,6 +173,9 @@ public class Main {
 
 	/** Burning Hot style of wild expansion flag. */
 	private static boolean burningHotWilds = false;
+
+	/** Lucky & Wild style of wild expansion flag. */
+	private static boolean luckyAndWildWilds = false;
 
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
@@ -634,6 +640,50 @@ public class Main {
 	}
 
 	/**
+	 * Expand wilds according Lucky & Wild rules.
+	 * 
+	 * @param view
+	 *            Screen with symbols.
+	 */
+	private static void luckyAndWildWilds(int[][] view) {
+		for (int i = 0; i < view.length; i++) {
+			for (int j = 0; j < view[i].length; j++) {
+				/* Do nothing if the wild is not extend wild. */
+				if (EXTEND_WILD_INDICES.contains(view[i][j]) == false) {
+					continue;
+				}
+
+				/* Extend wild. */
+				for (int k = i - 1; k <= i + 1; k++) {
+					for (int l = j - 1; l <= j + 1; l++) {
+						/* Check range boundaries. */
+						if (k < 0) {
+							continue;
+						}
+						if (l < 0) {
+							continue;
+						}
+						if (k >= view.length) {
+							continue;
+						}
+						if (l >= view[i].length) {
+							continue;
+						}
+
+						/* Scatters are not substituted. */
+						if(SCATTER_INDICES.contains(view[k][l]) == true) {
+							continue;
+						}
+						
+						/* Substitution. */
+						view[k][l] = view[i][j];
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Play single free spin game.
 	 *
 	 * @author Todor Balabanov
@@ -692,6 +742,11 @@ public class Main {
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
 			burningHotWilds(view);
+		}
+
+		/* Do Lucky & Wild style wilds expansion. */
+		if (luckyAndWildWilds == true) {
+			luckyAndWildWilds(view);
 		}
 
 		/* Win accumulated by lines. */
@@ -1214,6 +1269,7 @@ public class Main {
 
 		/* Store all symbol names and mark special like wilds and scatters. */
 		WILD_INDICES.clear();
+		EXTEND_WILD_INDICES.clear();
 		SCATTER_INDICES.clear();
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
@@ -1222,6 +1278,11 @@ public class Main {
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Wild") == true) {
 				WILD_INDICES.add(s - 1);
+			}
+
+			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Extend") == true) {
+				WILD_INDICES.add(s - 1);
+				EXTEND_WILD_INDICES.add(s - 1);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Scatter") == true) {
@@ -1511,6 +1572,7 @@ public class Main {
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
 		options.addOption(new Option("burninghot", false, "Burning Hot style of wilds expansion."));
+		options.addOption(new Option("luckywild", false, "Lucky & Wild style of wilds expansion."));
 
 		options.addOption(new Option("verbose", false, "Print intermediate results."));
 		options.addOption(new Option("verify", false, "Print input data structures."));
@@ -1601,6 +1663,11 @@ public class Main {
 
 		/* Switch on Burning Hot wilds expansion. */
 		if (commands.hasOption("burninghot") == true) {
+			burningHotWilds = true;
+		}
+
+		/* Switch on Lucky & Wild wilds expansion. */
+		if (commands.hasOption("luckywild") == true) {
 			burningHotWilds = true;
 		}
 
