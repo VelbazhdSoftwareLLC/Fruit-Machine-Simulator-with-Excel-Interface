@@ -24,6 +24,7 @@
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -385,10 +386,10 @@ public class Main {
 
 		/* Wild symbol passing to find first regular symbol. */
 		for (int i = 0; i < line.length; i++) {
-			if(line[i] == NO_SYMBOL_INDEX) {
+			if (line[i] == NO_SYMBOL_INDEX) {
 				break;
 			}
-			
+
 			/* Scatter stops the line. */
 			if (SCATTER_INDICES.contains(line[i]) == true) {
 				break;
@@ -409,7 +410,7 @@ public class Main {
 			if (SCATTER_INDICES.contains(line[i]) == true) {
 				continue;
 			}
-			
+
 			/* Only wilds are substituted. */
 			if (WILD_INDICES.contains(line[i]) == false) {
 				continue;
@@ -681,10 +682,10 @@ public class Main {
 						}
 
 						/* Scatters are not substituted. */
-						if(SCATTER_INDICES.contains(view[k][l]) == true) {
+						if (SCATTER_INDICES.contains(view[k][l]) == true) {
 							continue;
 						}
-						
+
 						/* Substitution. */
 						view[k][l] = view[i][j];
 					}
@@ -748,6 +749,8 @@ public class Main {
 
 		/* Spin is working even in brute force mode. */
 		spin(baseReels);
+		// printView(System.err);
+		// System.err.println();
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
@@ -1210,9 +1213,12 @@ public class Main {
 	/**
 	 * Print screen view.
 	 *
+	 * @param out
+	 *            Print stream reference.
+	 *
 	 * @author Todor Balabanov
 	 */
-	private static void printView() {
+	private static void printView(PrintStream out) {
 		int max = view[0].length;
 		for (int i = 0; i < view.length; i++) {
 			if (max < view[i].length) {
@@ -1222,10 +1228,10 @@ public class Main {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
-				System.out.print(SYMBOLS_NAMES.get(view[i][j]) + "\t");
+				out.print(SYMBOLS_NAMES.get(view[i][j]) + "\t");
 			}
 
-			System.out.println();
+			out.println();
 		}
 	}
 
