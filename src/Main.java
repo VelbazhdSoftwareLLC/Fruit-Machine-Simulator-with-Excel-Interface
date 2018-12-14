@@ -268,8 +268,7 @@ public class Main {
 	/**
 	 * Single reels spin to fill view with symbols.
 	 *
-	 * @param reels
-	 *            Reels strips.
+	 * @param reels Reels strips.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -288,8 +287,7 @@ public class Main {
 	/**
 	 * Single reels spin to fill view with symbols.
 	 *
-	 * @param reels
-	 *            Reels strips.
+	 * @param reels Reels strips.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -316,8 +314,7 @@ public class Main {
 	/**
 	 * Calculate win in particular line.
 	 *
-	 * @param line
-	 *            Single line.
+	 * @param line Single line.
 	 *
 	 * @return Calculated win.
 	 *
@@ -362,8 +359,7 @@ public class Main {
 	/**
 	 * Calculate win in particular line.
 	 *
-	 * @param line
-	 *            Single line.
+	 * @param line Single line.
 	 *
 	 * @return Calculated win.
 	 *
@@ -462,8 +458,7 @@ public class Main {
 	/**
 	 * Calculate win in all possible lines.
 	 *
-	 * @param view
-	 *            Symbols visible in screen view.
+	 * @param view Symbols visible in screen view.
 	 *
 	 * @return Calculated win.
 	 *
@@ -581,12 +576,9 @@ public class Main {
 	/**
 	 * Update histogram information when there is a win.
 	 * 
-	 * @param histogram
-	 *            Histogram array.
-	 * @param biggest
-	 *            Expected biggest win.
-	 * @param win
-	 *            Win value.
+	 * @param histogram Histogram array.
+	 * @param biggest   Expected biggest win.
+	 * @param win       Win value.
 	 */
 	private static void updateHistogram(long[] histogram, int biggest, int win) {
 		/*
@@ -605,8 +597,7 @@ public class Main {
 	/**
 	 * Expand wilds according Burning Hot rules.
 	 * 
-	 * @param view
-	 *            Screen with symbols.
+	 * @param view Screen with symbols.
 	 */
 	private static void burningHotWilds(int[][] view) {
 		/* Check wins in all possible lines. */
@@ -653,8 +644,7 @@ public class Main {
 	/**
 	 * Expand wilds according Lucky & Wild rules.
 	 * 
-	 * @param view
-	 *            Screen with symbols.
+	 * @param view Screen with symbols.
 	 */
 	private static void luckyAndWildWilds(int[][] view) {
 		for (int i = 0; i < view.length; i++) {
@@ -760,6 +750,8 @@ public class Main {
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
 			luckyAndWildWilds(view);
+			// printView(System.err);
+			// System.err.println();
 		}
 
 		/* Win accumulated by lines. */
@@ -1213,8 +1205,7 @@ public class Main {
 	/**
 	 * Print screen view.
 	 *
-	 * @param out
-	 *            Print stream reference.
+	 * @param out Print stream reference.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -1238,8 +1229,7 @@ public class Main {
 	/**
 	 * Print simulation execution command.
 	 *
-	 * @param args
-	 *            Command line arguments list.
+	 * @param args Command line arguments list.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -1256,12 +1246,9 @@ public class Main {
 	/**
 	 * Load data structures from ODS file.
 	 * 
-	 * @param inputFileName
-	 *            Name of the input file.
-	 * @param baseReelsSheetName
-	 *            Name of the base game reels sheet.
-	 * @param freeReelsSheetName
-	 *            Name of the free spins reels sheet.
+	 * @param inputFileName      Name of the input file.
+	 * @param baseReelsSheetName Name of the base game reels sheet.
+	 * @param freeReelsSheetName Name of the free spins reels sheet.
 	 */
 	private static void loadGameStructure(String inputFileName, String baseReelsSheetName, String freeReelsSheetName) {
 		XSSFWorkbook workbook = null;
@@ -1383,8 +1370,7 @@ public class Main {
 	/**
 	 * Generate initial reels according pay table values.
 	 * 
-	 * @param targetLength
-	 *            Initial desired length of the reels.
+	 * @param targetLength Initial desired length of the reels.
 	 */
 	private static void initialReels(int targetLength) {
 		/* Initialize sums. */
@@ -1451,9 +1437,8 @@ public class Main {
 	/**
 	 * Shuffle loaded reals in stack of symbols.
 	 * 
-	 * @param stackSize
-	 *            Size of the stack. If it is one there is no stack and it is
-	 *            regular shuffling.
+	 * @param stackSize Size of the stack. If it is one there is no stack and it is
+	 *                  regular shuffling.
 	 */
 	private static void shuffleReels(int stackSize) {
 		/* Stack of symbols can not be negative or zero. */
@@ -1548,11 +1533,9 @@ public class Main {
 	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000 -freeoff
 	 * -basereels "Base Reels 95.5 RTP"
 	 * 
-	 * @param args
-	 *            Command line arguments.
+	 * @param args Command line arguments.
 	 * 
-	 * @throws ParseException
-	 *             When there is a problem with command line arguments.
+	 * @throws ParseException When there is a problem with command line arguments.
 	 */
 	public static void main(String[] args) throws ParseException {
 		/* Print execution command. */
@@ -1684,7 +1667,7 @@ public class Main {
 
 		/* Switch on Lucky & Wild wilds expansion. */
 		if (commands.hasOption("luckywild") == true) {
-			burningHotWilds = true;
+			luckyAndWildWilds = true;
 		}
 
 		/* Run brute force instead of Monte Carlo simulation. */
