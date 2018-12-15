@@ -1439,8 +1439,9 @@ public class Main {
 	 * 
 	 * @param stackSize Size of the stack. If it is one there is no stack and it is
 	 *                  regular shuffling.
+	 * @param repeats   If it is true it will allow repeats in neighboring stacks.
 	 */
-	private static void shuffleReels(int stackSize) {
+	private static void shuffleReels(int stackSize, boolean repeats) {
 		/* Stack of symbols can not be negative or zero. */
 		if (stackSize < 1) {
 			stackSize = 1;
@@ -1511,7 +1512,7 @@ public class Main {
 						break;
 					}
 				}
-			} while (fine == false);
+			} while (fine == false && repeats == false);
 
 			/* Put symbols back to the original reel. */
 			int position = 0;
@@ -1567,6 +1568,7 @@ public class Main {
 		options.addOption(Option.builder("shuffle").argName("number").hasArg().valueSeparator()
 				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).").build());
 
+		options.addOption(new Option("repeats", false, "Switch on repeats in shuffling groups."));
 		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
@@ -1638,7 +1640,7 @@ public class Main {
 
 		/* Shuffle loaded reels with stacked size value. */
 		if (commands.hasOption("shuffle") == true) {
-			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")));
+			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")), commands.hasOption("repeats"));
 			initialize();
 			printDataStructures();
 			System.exit(0);
