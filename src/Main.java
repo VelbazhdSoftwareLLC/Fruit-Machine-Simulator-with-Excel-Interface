@@ -646,7 +646,17 @@ public class Main {
 	 * 
 	 * @param view Screen with symbols.
 	 */
-	private static void luckyAndWildWilds(int[][] view) {
+	private static void luckyAndWildWilds(int[][] original) {
+		/* Deep copy of the view. */
+		int[][] view = new int[original.length][];
+		for (int i = 0; i < original.length; i++) {
+			view[i] = new int[original[i].length];
+			for (int j = 0; j < original[i].length; j++) {
+				view[i][j] = original[i][j];
+			}
+		}
+
+		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
 				/* Do nothing if the wild is not extend wild. */
@@ -677,7 +687,7 @@ public class Main {
 						}
 
 						/* Substitution. */
-						view[k][l] = view[i][j];
+						original[k][l] = view[i][j];
 					}
 				}
 			}
@@ -744,14 +754,20 @@ public class Main {
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
+//			printView(System.err);
+//			System.err.println();
 			burningHotWilds(view);
+//			printView(System.err);
+//			System.err.println();
 		}
 
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
+//			printView(System.err);
+//			System.err.println();
 			luckyAndWildWilds(view);
-			// printView(System.err);
-			// System.err.println();
+//			printView(System.err);
+//			System.err.println();
 		}
 
 		/* Win accumulated by lines. */
