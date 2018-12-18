@@ -184,6 +184,9 @@ public class Main {
 	/** Number of bins used in the histogram. */
 	private static int numberOfBins = 1000;
 
+	/** Number of allowed stack repeats in the shuffling process. */
+	private static int numberOfAllowedStackRepeats = 1;
+
 	/** Symbols win hit rate in base game. */
 	private static long[][] baseSymbolMoney = {};
 
@@ -1455,9 +1458,9 @@ public class Main {
 	 * 
 	 * @param stackSize Size of the stack. If it is one there is no stack and it is
 	 *                  regular shuffling.
-	 * @param repeats   If it is true it will allow repeats in neighboring stacks.
+	 * @param repeats   Number of allowed repeats in neighboring stacks.
 	 */
-	private static void shuffleReels(int stackSize, boolean repeats) {
+	private static void shuffleReels(int stackSize, int repeats) {
 		/* Stack of symbols can not be negative or zero. */
 		if (stackSize < 1) {
 			stackSize = 1;
@@ -1509,12 +1512,12 @@ public class Main {
 			}
 
 			/* Do the real shuffling until there is no same groups next to each other. */
-			boolean fine;
+			int counter;
 			do {
 				Collections.shuffle(stacks);
 
 				/* Check all groups which are next to each other. */
-				fine = true;
+				counter = 0;
 				for (int i = 0; i < stacks.size() - 1; i++) {
 					List<String> left = stacks.get(i);
 					List<String> right = stacks.get(i + 1);
@@ -1524,11 +1527,10 @@ public class Main {
 					 * done once again.
 					 */
 					if (left.get(0).equals(right.get(0)) == true) {
-						fine = false;
-						break;
+						counter++;
 					}
 				}
-			} while (fine == false && repeats == false);
+			} while (counter > repeats);
 
 			/* Put symbols back to the original reel. */
 			int position = 0;
@@ -1583,8 +1585,9 @@ public class Main {
 				.desc("Generate initial reels according paytable values and reel target length.").build());
 		options.addOption(Option.builder("shuffle").argName("number").hasArg().valueSeparator()
 				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).").build());
+		options.addOption(Option.builder("repeats").argName("number").hasArg().valueSeparator()
+				.desc("Determine shuffle stacked repeats (default 1 - no repeats).").build());
 
-		options.addOption(new Option("repeats", false, "Switch on repeats in shuffling groups."));
 		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
 		options.addOption(new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
@@ -1654,9 +1657,14 @@ public class Main {
 			System.exit(0);
 		}
 
+		/* Keep number of allowed stacks repeats. */
+		if (commands.hasOption("repeats") == true) {
+			numberOfAllowedStackRepeats = Integer.valueOf(commands.getOptionValue("repeats"));
+		}
+
 		/* Shuffle loaded reels with stacked size value. */
 		if (commands.hasOption("shuffle") == true) {
-			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")), commands.hasOption("repeats"));
+			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
 			initialize();
 			printDataStructures();
 			System.exit(0);
