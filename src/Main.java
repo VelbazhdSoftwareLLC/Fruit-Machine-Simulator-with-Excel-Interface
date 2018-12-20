@@ -602,7 +602,7 @@ public class Main {
 	 * 
 	 * @param view Screen with symbols.
 	 */
-	private static void burningHotWilds(int[][] view) {
+	private static void burningHotSubstitution(int[][] view) {
 		/* Check wins in all possible lines. */
 		int progress = 0;
 		start: for (int l = 0; l < lines.length; l++) {
@@ -649,7 +649,7 @@ public class Main {
 	 * 
 	 * @param view Screen with symbols.
 	 */
-	private static void luckyAndWildWilds(int[][] original) {
+	private static void luckyAndWildSubstitution(int[][] original) {
 		/* Deep copy of the view. */
 		int[][] view = new int[original.length][];
 		for (int i = 0; i < original.length; i++) {
@@ -658,6 +658,10 @@ public class Main {
 				view[i][j] = original[i][j];
 			}
 		}
+
+		// TODO It should not be substituted by this way, but it will be done like this,
+		// because of the customer request.
+		int substituent = WILD_INDICES.iterator().next();
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
@@ -690,7 +694,7 @@ public class Main {
 						}
 
 						/* Substitution. */
-						original[k][l] = view[i][j];
+						original[k][l] = substituent;
 					}
 				}
 			}
@@ -759,7 +763,7 @@ public class Main {
 		if (burningHotWilds == true) {
 //			printView(System.err);
 //			System.err.println();
-			burningHotWilds(view);
+			burningHotSubstitution(view);
 //			printView(System.err);
 //			System.err.println();
 		}
@@ -768,7 +772,7 @@ public class Main {
 		if (luckyAndWildWilds == true) {
 //			printView(System.err);
 //			System.err.println();
-			luckyAndWildWilds(view);
+			luckyAndWildSubstitution(view);
 //			printView(System.err);
 //			System.err.println();
 		}
