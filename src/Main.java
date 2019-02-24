@@ -1281,7 +1281,6 @@ public class Main {
 		} catch (IOException e) {
 			System.out.println("Input file " + inputFileName + " is not usable!");
 			System.err.println(e);
-			e.printStackTrace();
 			System.exit(0);
 		}
 
@@ -1473,6 +1472,8 @@ public class Main {
 			stackSize = 1;
 		}
 
+		System.err.print("Repeats by reels:\t");		
+		
 		/* Handle each reel by itself. */
 		for (int reel = 0; reel < baseStrips.length; reel++) {
 			/* Reel should be sorted first in order to form stacked groups. */
@@ -1520,24 +1521,57 @@ public class Main {
 
 			/* Do the real shuffling until there is no same groups next to each other. */
 			int counter;
+			Collections.shuffle(stacks);
 			do {
-				Collections.shuffle(stacks);
+				/* Extra shuffle for the neighbors. */
+				for (int i = 0; i < stacks.size(); i++) {
+					int index1 = (i + 1) % stacks.size();
+					List<String> left = stacks.get(i);
+					List<String> right = stacks.get(index1);
+
+					/*
+					 * If first symbols in the groups are not equal there is nothing to be done.
+					 */
+					if (left.get(0).equals(right.get(0)) == false) {
+						continue;
+					}
+
+					/*
+					 * Probabilistic try [size] times to find different stack. It is probabilistic,
+					 * because it is possible different stacks not to exist. For example when the
+					 * reel has only one symbol in it.
+					 */
+					for (int j = 0; j < stacks.size(); j++) {
+						int index2 = PRNG.nextInt(stacks.size());
+						List<String> random = stacks.get(index2);
+
+						/* If both stacks are equal there is no reason to swap them. */
+						if (random.get(0).equals(right.get(0)) == true) {
+							continue;
+						}
+
+						/* Swap stacks if they are different. */
+						Collections.swap(stacks, index1, index2);
+						break;
+					}
+				}
 
 				/* Check all groups which are next to each other. */
 				counter = 0;
-				for (int i = 0; i < stacks.size() - 1; i++) {
+				for (int i = 0; i < stacks.size(); i++) {
 					List<String> left = stacks.get(i);
-					List<String> right = stacks.get(i + 1);
+					List<String> right = stacks.get((i + 1) % stacks.size());
 
 					/*
-					 * If first symbols in the groups are equal it means that shuffling should be
-					 * done once again.
+					 * If first symbols in the groups are equal count it.
 					 */
 					if (left.get(0).equals(right.get(0)) == true) {
 						counter++;
 					}
 				}
 			} while (counter > repeats);
+			System.err.print(counter);		
+			System.err.print("\t");		
 
 			/* Put symbols back to the original reel. */
 			int position = 0;
@@ -1548,6 +1582,9 @@ public class Main {
 				}
 			}
 		}
+		
+		System.err.println();		
+		System.err.println();		
 	}
 
 	/**
