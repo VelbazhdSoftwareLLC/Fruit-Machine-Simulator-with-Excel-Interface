@@ -278,12 +278,20 @@ public class Main {
 	 */
 	private static void nextCombination(int[] reelsStops) {
 		reelsStops[0] += 1;
+
+		/* Handle all reels one by one. */
 		for (int i = 0; i < reelsStops.length; i++) {
-			if (reelsStops[i] >= baseReels[i].length) {
-				reelsStops[i] = 0;
-				if (i < reelsStops.length - 1) {
-					reelsStops[i + 1] += 1;
-				}
+			/* Do nothing if the edge of the reel is not reached. */
+			if (reelsStops[i] < baseReels[i].length) {
+				continue;
+			}
+
+			/* Put the reel in starting position. */
+			reelsStops[i] = 0;
+
+			/* Move next reel with one position. */
+			if (i < reelsStops.length - 1) {
+				reelsStops[i + 1] += 1;
 			}
 		}
 	}
@@ -296,19 +304,23 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static void spin(int[][] reels) {
+		/* Spin all reels. */
 		for (int i = 0; i < view.length && i < reels.length; i++) {
 			int column[] = new int[view[i].length];
 
+			/* Switch between Brute Force and Monte Carlo. */
 			if (bruteForce == true) {
 				column[0] = reelsStops[i];
 			} else {
 				column[0] = PRNG.nextInt(reels[i].length);
 			}
 
+			/* Fill symbols for the particular column. */
 			for (int c = 1; c < column.length; c++) {
 				column[c] = (column[0] + c) % reels[i].length;
 			}
 
+			/* Copy the column into the view array. */
 			for (int j = 0; j < view[i].length; j++) {
 				view[i][j] = reels[i][column[j]];
 			}
@@ -400,6 +412,7 @@ public class Main {
 				if (SCATTER_INDICES.contains(line[i]) == false) {
 					symbol = line[i];
 				}
+				
 				break;
 			}
 		}
@@ -438,13 +451,14 @@ public class Main {
 			line[i] = NO_SYMBOL_INDEX;
 		}
 
+		/* Calculate single line win. */
 		int win = singleLineBet * paytable[number][symbol] * wildInLineMultiplier;
 
 		/* Adjust the win according wild line information. */
 		if (win < wildWin[2]) {
 			symbol = wildWin[0];
 			number = wildWin[1];
-			win = wildWin[1];
+			win = wildWin[2];
 		}
 
 		/* Update statistics. */
@@ -457,6 +471,25 @@ public class Main {
 		}
 
 		return (win);
+	}
+
+	/**
+	 * Initialize an empty line.
+	 * 
+	 * @param size Size of a single line.
+	 * 
+	 * @return Single line as array with no symbols.
+	 *
+	 * @author Todor Balabanov
+	 */
+	private static int[] emptyLine(int size) {
+		int[] line = new int[size];
+
+		for (int i = 0; i < line.length; i++) {
+			line[i] = NO_SYMBOL_INDEX;
+		}
+
+		return line;
 	}
 
 	/**
@@ -473,7 +506,8 @@ public class Main {
 
 		/* Check wins in all possible lines. */
 		for (int l = 0; l < lines.length; l++) {
-			int[] line = { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX };
+			/* Initialize an empty line. */
+			int[] line = emptyLine(lines[l].length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
@@ -515,6 +549,7 @@ public class Main {
 
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
+			/* Calculate scatter win. */
 			double value = paytable[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
 
 			/* If there is no win do nothing. */
@@ -603,11 +638,14 @@ public class Main {
 	 * 
 	 * @param view Screen with symbols.
 	 */
-	private static void burningHotSubstitution(int[][] view) {
+	private static boolean burningHotSubstitution(int[][] view) {
+		boolean result = false;
+
 		/* Check wins in all possible lines. */
 		int progress = 0;
 		start: for (int l = 0; l < lines.length; l++) {
-			int[] line = { NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX, NO_SYMBOL_INDEX };
+			/* Initialize an empty line. */
+			int[] line = emptyLine(lines[l].length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
@@ -615,7 +653,8 @@ public class Main {
 				line[i] = view[i][index];
 
 				/* If current symbol is not wild there is no need to check for a win. */
-				if (WILD_INDICES.contains(line[i]) == true) {
+				int substituent = line[i];
+				if (WILD_INDICES.contains(line[i]) == false) {
 					continue;
 				}
 
@@ -629,9 +668,12 @@ public class Main {
 					continue;
 				}
 
+				/* Flag for substitution. */
+				result = true;
+
 				/* If current symbol is wild and there is a win expansion is done. */
 				for (int j = 0; j < view[i].length; j++) {
-					view[i][j] = line[i];
+					view[i][j] = substituent;
 				}
 
 				/*
@@ -643,6 +685,8 @@ public class Main {
 				continue start;
 			}
 		}
+
+		return result;
 	}
 
 	/**
@@ -650,7 +694,9 @@ public class Main {
 	 * 
 	 * @param view Screen with symbols.
 	 */
-	private static void luckyAndWildSubstitution(int[][] original) {
+	private static boolean luckyAndWildSubstitution(int[][] original) {
+		boolean result = false;
+
 		/* Deep copy of the view. */
 		int[][] view = new int[original.length][];
 		for (int i = 0; i < original.length; i++) {
@@ -694,12 +740,17 @@ public class Main {
 							continue;
 						}
 
+						/* Flag for substitution. */
+						result = true;
+
 						/* Substitution. */
 						original[k][l] = substituent;
 					}
 				}
 			}
 		}
+
+		return result;
 	}
 
 	/**
@@ -757,25 +808,35 @@ public class Main {
 
 		/* Spin is working even in brute force mode. */
 		spin(baseReels);
-		// printView(System.err);
-		// System.err.println();
+//		printView(System.err);
+//		System.err.println();
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
+//			System.err.println(Arrays.deepToString(view));
 //			printView(System.err);
 //			System.err.println();
-			burningHotSubstitution(view);
-//			printView(System.err);
-//			System.err.println();
+			boolean result = burningHotSubstitution(view);
+//			if (result == true) {
+//				System.err.println(Arrays.deepToString(view));
+//				printView(System.err);
+//				System.err.println();
+//				System.exit(0);
+//			}
 		}
 
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
+//			System.err.println(Arrays.deepToString(view));
 //			printView(System.err);
 //			System.err.println();
-			luckyAndWildSubstitution(view);
-//			printView(System.err);
-//			System.err.println();
+			boolean result = luckyAndWildSubstitution(view);
+//			if (result == true) {
+//				System.err.println(Arrays.deepToString(view));
+//				printView(System.err);
+//				System.err.println();
+//				System.exit(0);
+//			}
 		}
 
 		/* Win accumulated by lines. */
@@ -1472,8 +1533,8 @@ public class Main {
 			stackSize = 1;
 		}
 
-		System.err.print("Repeats by reels:\t");		
-		
+		System.err.print("Repeats by reels:\t");
+
 		/* Handle each reel by itself. */
 		for (int reel = 0; reel < baseStrips.length; reel++) {
 			/* Reel should be sorted first in order to form stacked groups. */
@@ -1570,8 +1631,8 @@ public class Main {
 					}
 				}
 			} while (counter > repeats);
-			System.err.print(counter);		
-			System.err.print("\t");		
+			System.err.print(counter);
+			System.err.print("\t");
 
 			/* Put symbols back to the original reel. */
 			int position = 0;
@@ -1582,9 +1643,9 @@ public class Main {
 				}
 			}
 		}
-		
-		System.err.println();		
-		System.err.println();		
+
+		System.err.println();
+		System.err.println();
 	}
 
 	/**
