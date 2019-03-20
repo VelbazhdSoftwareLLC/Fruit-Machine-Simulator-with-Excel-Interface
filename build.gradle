@@ -1,21 +1,32 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: "com.gradle.build-scan"
+
+plugins {
+    id 'com.gradle.build-scan' version '2.2.1' 
+}
 
 repositories {
     jcenter()
     mavenCentral()
+    maven {url "https://plugins.gradle.org/m2/"}
 }
 
 dependencies {
     compile 'org.apache.commons:commons-math3:3.6.1'
-	compile 'org.apache.commons:commons-collections4:4.3'
+    compile 'org.apache.commons:commons-collections4:4.3'
     compile 'org.apache.commons:commons-compress:1.18'
     compile 'org.apache.poi:poi:4.0.1'
     compile 'org.apache.poi:poi-ooxml:4.0.1'
     compile 'org.apache.poi:poi-ooxml-schemas:4.0.1'
-	compile 'commons-cli:commons-cli:1.4'
-
+    compile 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.12'
+    classpath "com.gradle:build-scan-plugin:2.2.1"
+}
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
 
 task jarAll(type: Jar) {
