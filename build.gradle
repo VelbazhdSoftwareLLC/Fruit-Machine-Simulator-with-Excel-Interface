@@ -1,11 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: "com.gradle.build-scan"
 
 repositories {
     jcenter()
     mavenCentral()
-    maven {url "https://plugins.gradle.org/m2/"}
 }
 
 dependencies {
@@ -17,11 +15,6 @@ dependencies {
     compile 'org.apache.poi:poi-ooxml-schemas:4.0.1'
     compile 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.12'
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
 
 task jarAll(type: Jar) {
