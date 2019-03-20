@@ -2,10 +2,6 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: "com.gradle.build-scan"
 
-plugins {
-    id 'com.gradle.build-scan' version '2.2.1' 
-}
-
 repositories {
     jcenter()
     mavenCentral()
@@ -21,7 +17,6 @@ dependencies {
     compile 'org.apache.poi:poi-ooxml-schemas:4.0.1'
     compile 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.12'
-    classpath "com.gradle:build-scan-plugin:2.2.1"
 }
 
 buildScan {
