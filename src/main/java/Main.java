@@ -109,7 +109,7 @@ public class Main {
 	private static int wildInLineMultiplier = 0;
 
 	/** If scatter win is presented on the screen. */
-	private static double scatterMultiplier = 0;
+	private static int scatterMultiplier = 0;
 
 	/** Total bet in single base game spin. */
 	private static int singleLineBet = 0;
@@ -179,6 +179,9 @@ public class Main {
 	/** Lucky & Wild style of wild expansion flag. */
 	private static boolean luckyAndWildWilds = false;
 
+	/** Lucky Lady's Charm style of simulation flag. */
+	private static boolean luckyLadysCharm = false;
+
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
 
@@ -212,6 +215,30 @@ public class Main {
 	private static int highestPaytableWin = 0;
 
 	/**
+	 * Calculate all combinations in base game.
+	 * 
+	 * @return Total number of combinations in the base game.
+	 */
+	private static long baseGameNumberOfCombinations() {
+		/*
+		 * Minus one is needed in order first combination to start from zeros in brute
+		 * force calculations.
+		 */
+		reelsStops = new int[baseReels.length];
+		for (int i = 1; i < reelsStops.length; i++) {
+			reelsStops[i] = 0;
+		}
+		reelsStops[0] = -1;
+
+		long result = 1;
+		for (int i = 0; i < baseReels.length; i++) {
+			result *= baseReels[i].length;
+		}
+
+		return result;
+	}
+
+	/**
 	 * Data initializer.
 	 *
 	 * @author Todor Balabanov
@@ -231,6 +258,20 @@ public class Main {
 			}
 		}
 
+		/* Transform symbols names to integer values. */
+		freeReels = new int[freeStrips.length][];
+		for (int i = 0; i < freeStrips.length; i++) {
+			freeReels[i] = new int[freeStrips[i].length];
+			for (int j = 0; j < freeStrips[i].length; j++) {
+				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
+					if (SYMBOLS_NAMES.get(s).trim().equals(freeStrips[i][j].trim()) == true) {
+						freeReels[i][j] = s;
+						break;
+					}
+				}
+			}
+		}
+
 		/* Initialize view with no symbols. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
@@ -239,8 +280,6 @@ public class Main {
 		}
 
 		/* Adjust multipliers. */
-		freeGamesMultiplier = 0;
-		wildInLineMultiplier = 0;
 		singleLineBet = 1;
 
 		/* Calculate total bet. */
@@ -390,9 +429,6 @@ public class Main {
 		/* Calculate wild win if there is any. */
 		int[] wildWin = wildLineWin(line);
 
-		/* Line win without wild is multiplied by one. */
-		wildInLineMultiplier = 1;
-
 		/* Keep first symbol in the line. */
 		int symbol = line[0];
 
@@ -412,10 +448,13 @@ public class Main {
 				if (SCATTER_INDICES.contains(line[i]) == false) {
 					symbol = line[i];
 				}
-				
+
 				break;
 			}
 		}
+
+		/* Line win without wild is multiplied by one. */
+		int lineMultiplier = 1;
 
 		/* Wild symbol substitution. */
 		for (int i = 0; i < line.length && wildsOff == false; i++) {
@@ -432,8 +471,8 @@ public class Main {
 			/* Substitute wild with regular symbol. */
 			line[i] = symbol;
 
-			/* Line win with wild is multiplied by two. */
-			wildInLineMultiplier = 1;
+			/* Line win with wild is multiplied by line multiplier. */
+			lineMultiplier = wildInLineMultiplier;
 		}
 
 		/* Count symbols in winning line. */
@@ -452,7 +491,7 @@ public class Main {
 		}
 
 		/* Calculate single line win. */
-		int win = singleLineBet * paytable[number][symbol] * wildInLineMultiplier;
+		int win = singleLineBet * paytable[number][symbol] * lineMultiplier;
 
 		/* Adjust the win according wild line information. */
 		if (win < wildWin[2]) {
@@ -587,28 +626,28 @@ public class Main {
 			return;
 		}
 
+		/* Calculate number of scatters. */
 		int numberOfScatters = 0;
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				// TODO If there are more than one scatter it is not common all of them to
-				// trigger free games.
+				// TODO If there are more than one scatter symbol it is not common all of them
+				// to trigger free games.
 				if (SCATTER_INDICES.contains(view[i][j]) == true) {
 					numberOfScatters++;
 				}
 			}
 		}
 
-		/* In base game 3+ scatters turn into free spins. */
-		if (numberOfScatters < 3 && freeGamesNumber == 0) {
-			return;
-		} else if (numberOfScatters >= 3 && freeGamesNumber == 0) {
-			freeGamesNumber = 0;
-			freeGamesMultiplier = 0;
-			// totalNumberOfFreeGameStarts++;
-		} else if (numberOfScatters >= 3 && freeGamesNumber > 0) {
-			freeGamesNumber += 0;
-			freeGamesMultiplier = 0;
-			// totalNumberOfFreeGameRestarts++;
+		/* Adjust number of free spins according Lucky Lady's Charm rules */
+		if (luckyLadysCharm == true) {
+			/* In base game 3+ scatters turn into free spins. */
+			if (numberOfScatters >= 3 && freeGamesNumber == 0) {
+				freeGamesNumber = 15;
+				totalNumberOfFreeGameStarts++;
+			} else if (numberOfScatters >= 3 && freeGamesNumber > 0) {
+				freeGamesNumber += 15;
+				totalNumberOfFreeGameRestarts++;
+			}
 		}
 	}
 
@@ -875,7 +914,6 @@ public class Main {
 
 			freeGamesNumber--;
 		}
-		freeGamesMultiplier = 1;
 	}
 
 	/**
@@ -913,6 +951,27 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static void printDataStructures() {
+		System.out.println("Symbols:");
+		int size = Math.min(SYMBOLS_NAMES.size(), SYMBOLS_NUMBERS.size());
+		System.out.println("Name\tIndex\tType");
+		for (int i = 0; i < size; i++) {
+			System.out.print(SYMBOLS_NAMES.get(i) + "\t");
+			System.out.print(SYMBOLS_NUMBERS.get(i) + "\t");
+
+			if (SCATTER_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+				System.out.print("Scatter");
+			} else if (EXTEND_WILD_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+				System.out.print("Extended");
+			} else if (WILD_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+				System.out.print("Wild");
+			} else {
+				System.out.print("Regular");
+			}
+
+			System.out.println();
+		}
+		System.out.println();
+
 		System.out.println("Paytable:");
 		for (int i = 0; i < paytable.length; i++) {
 			System.out.print("\t" + i + " of");
@@ -1354,7 +1413,9 @@ public class Main {
 		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
 		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
 		// double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
-		scatterMultiplier = sheet.getRow(7).getCell(1).getNumericCellValue();
+		scatterMultiplier = (int) (sheet.getRow(7).getCell(1).getNumericCellValue());
+		wildInLineMultiplier = (int) sheet.getRow(8).getCell(1).getNumericCellValue();
+		freeGamesMultiplier = (int) sheet.getRow(9).getCell(1).getNumericCellValue();
 
 		/* Store all symbol names and mark special like wilds and scatters. */
 		WILD_INDICES.clear();
@@ -1410,7 +1471,11 @@ public class Main {
 			int length = 0;
 			for (int r = 0; true; r++) {
 				try {
-					sheet.getRow(r).getCell(c).getStringCellValue();
+					/* Check for valid symbol values. */
+					String value = sheet.getRow(r).getCell(c).getStringCellValue();
+					if (SYMBOLS_NAMES.contains(value) == false) {
+						break;
+					}
 				} catch (Exception e) {
 					break;
 				}
@@ -1433,7 +1498,11 @@ public class Main {
 			int length = 0;
 			for (int r = 0; true; r++) {
 				try {
-					sheet.getRow(r).getCell(c).getStringCellValue();
+					/* Check for valid symbol values. */
+					String value = sheet.getRow(r).getCell(c).getStringCellValue();
+					if (SYMBOLS_NAMES.contains(value) == false) {
+						break;
+					}
 				} catch (Exception e) {
 					break;
 				}
@@ -1457,8 +1526,10 @@ public class Main {
 	 * Generate initial reels according pay table values.
 	 * 
 	 * @param targetLength Initial desired length of the reels.
+	 * 
+	 * @return Array of symbols as initial strips.
 	 */
-	private static void initialReels(int targetLength) {
+	private static String[][] initialReels(int targetLength) {
 		/* Initialize sums. */
 		double values[] = new double[SYMBOLS_NAMES.size()];
 		for (int symbol = 0; symbol < values.length; symbol++) {
@@ -1509,25 +1580,28 @@ public class Main {
 		}
 
 		/* Populate initial reels. */
-		baseStrips = new String[view.length][(int) total];
+		String strips[][] = new String[view.length][(int) total];
 		for (int symbol = 0, level = 0; symbol < values.length; symbol++) {
 			for (int counter = 0; counter < values[symbol]; counter++) {
-				for (int reel = 0; reel < baseStrips.length; reel++) {
-					baseStrips[reel][level] = SYMBOLS_NAMES.get(symbol);
+				for (int reel = 0; reel < strips.length; reel++) {
+					strips[reel][level] = SYMBOLS_NAMES.get(symbol);
 				}
 				level++;
 			}
 		}
+
+		return strips;
 	}
 
 	/**
 	 * Shuffle loaded reals in stack of symbols.
 	 * 
+	 * @param strips    Symbol names as array.
 	 * @param stackSize Size of the stack. If it is one there is no stack and it is
 	 *                  regular shuffling.
 	 * @param repeats   Number of allowed repeats in neighboring stacks.
 	 */
-	private static void shuffleReels(int stackSize, int repeats) {
+	private static void shuffle(String[][] strips, int stackSize, int repeats) {
 		/* Stack of symbols can not be negative or zero. */
 		if (stackSize < 1) {
 			stackSize = 1;
@@ -1536,9 +1610,9 @@ public class Main {
 		System.err.print("Repeats by reels:\t");
 
 		/* Handle each reel by itself. */
-		for (int reel = 0; reel < baseStrips.length; reel++) {
+		for (int reel = 0; reel < strips.length; reel++) {
 			/* Reel should be sorted first in order to form stacked groups. */
-			List<String> sortedReel = Arrays.asList(baseStrips[reel]);
+			List<String> sortedReel = Arrays.asList(strips[reel]);
 			Collections.sort(sortedReel);
 
 			/* Form structures to hold groups. */
@@ -1638,7 +1712,7 @@ public class Main {
 			int position = 0;
 			for (List<String> group : stacks) {
 				for (String symbol : group) {
-					baseStrips[reel][position] = symbol;
+					strips[reel][position] = symbol;
 					position++;
 				}
 			}
@@ -1698,6 +1772,7 @@ public class Main {
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
 		options.addOption(new Option("burninghot", false, "Burning Hot style of wilds expansion."));
 		options.addOption(new Option("luckywild", false, "Lucky & Wild style of wilds expansion."));
+		options.addOption(new Option("luckyladyscharm", false, "Lucky Lady's Charm rules of simulation."));
 
 		options.addOption(new Option("verbose", false, "Print intermediate results."));
 		options.addOption(new Option("verify", false, "Print input data structures."));
@@ -1743,6 +1818,12 @@ public class Main {
 		String freeReelsSheetName = "";
 		if (commands.hasOption("freereels") == true) {
 			freeReelsSheetName = commands.getOptionValue("freereels");
+		} else {
+			System.out.println("Free spins reels sheet name is missing!");
+			System.out.println();
+			(new HelpFormatter()).printHelp("java Main", options, true);
+			System.out.println();
+			System.exit(0);
 		}
 
 		/* Number of bins used in the wins histogram. */
@@ -1756,7 +1837,8 @@ public class Main {
 
 		/* Generate initial reels according pay table values. */
 		if (commands.hasOption("initial") == true) {
-			initialReels(Integer.valueOf(commands.getOptionValue("initial")));
+			baseStrips = initialReels(Integer.valueOf(commands.getOptionValue("initial")));
+			freeStrips = initialReels(Integer.valueOf(commands.getOptionValue("initial")));
 			initialize();
 			printDataStructures();
 			System.exit(0);
@@ -1769,7 +1851,8 @@ public class Main {
 
 		/* Shuffle loaded reels with stacked size value. */
 		if (commands.hasOption("shuffle") == true) {
-			shuffleReels(Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
+			shuffle(baseStrips, Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
+			shuffle(freeStrips, Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
 			initialize();
 			printDataStructures();
 			System.exit(0);
@@ -1801,6 +1884,11 @@ public class Main {
 			luckyAndWildWilds = true;
 		}
 
+		/* Switch on Lucky Lady's Charm rules for the simulation. */
+		if (commands.hasOption("luckyladyscharm") == true) {
+			luckyLadysCharm = true;
+		}
+
 		/* Run brute force instead of Monte Carlo simulation. */
 		if (commands.hasOption("bruteforce") == true) {
 			bruteForce = true;
@@ -1811,7 +1899,10 @@ public class Main {
 			verboseOutput = true;
 		}
 
+		/* Default number of simulation. */
 		long numberOfSimulations = 20_000_000L;
+
+		/* Default intermediated printing interval. */
 		long progressPrintOnIteration = 1_000_000L;
 
 		/* Adjust number of simulations. */
@@ -1835,20 +1926,7 @@ public class Main {
 
 		/* Calculate all combinations in base game. */
 		if (bruteForce == true) {
-			/*
-			 * Minus one is needed in order first combination to start from zeros in brute
-			 * force calculations.
-			 */
-			reelsStops = new int[baseReels.length];
-			for (int i = 1; i < reelsStops.length; i++) {
-				reelsStops[i] = 0;
-			}
-			reelsStops[0] = -1;
-
-			numberOfSimulations = 1;
-			for (int i = 0; i < baseReels.length; i++) {
-				numberOfSimulations *= baseReels[i].length;
-			}
+			numberOfSimulations = baseGameNumberOfCombinations();
 		}
 
 		/* Simulation main loop. */
