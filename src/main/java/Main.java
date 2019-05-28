@@ -129,14 +129,17 @@ public class Main {
 	/** Total amount of won money in base game. */
 	private static long baseMoney = 0L;
 
-	/** All values as win in the base game (even zeros) for the whole simulation. */
+	/**
+	 * All values as win in the base game (even zeros) for the whole simulation.
+	 */
 	private static List<Integer> baseOutcomes = new ArrayList<Integer>();
 
 	/** Total amount of won money in free spins. */
 	private static long freeMoney = 0L;
 
 	/**
-	 * All values as win in the free spins (even zeros) for the whole simulation.
+	 * All values as win in the free spins (even zeros) for the whole
+	 * simulation.
 	 */
 	private static List<Integer> freeOutcomes = new ArrayList<Integer>();
 
@@ -210,7 +213,8 @@ public class Main {
 	private static long freeWinsHistogram[] = {};
 
 	/**
-	 * Highest win according pay table. It is used in wins histogram calculations.
+	 * Highest win according pay table. It is used in wins histogram
+	 * calculations.
 	 */
 	private static int highestPaytableWin = 0;
 
@@ -221,8 +225,8 @@ public class Main {
 	 */
 	private static long baseGameNumberOfCombinations() {
 		/*
-		 * Minus one is needed in order first combination to start from zeros in brute
-		 * force calculations.
+		 * Minus one is needed in order first combination to start from zeros in
+		 * brute force calculations.
 		 */
 		reelsStops = new int[baseReels.length];
 		for (int i = 1; i < reelsStops.length; i++) {
@@ -250,7 +254,8 @@ public class Main {
 			baseReels[i] = new int[baseStrips[i].length];
 			for (int j = 0; j < baseStrips[i].length; j++) {
 				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
-					if (SYMBOLS_NAMES.get(s).trim().equals(baseStrips[i][j].trim()) == true) {
+					if (SYMBOLS_NAMES.get(s).trim()
+							.equals(baseStrips[i][j].trim()) == true) {
 						baseReels[i][j] = s;
 						break;
 					}
@@ -264,7 +269,8 @@ public class Main {
 			freeReels[i] = new int[freeStrips[i].length];
 			for (int j = 0; j < freeStrips[i].length; j++) {
 				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
-					if (SYMBOLS_NAMES.get(s).trim().equals(freeStrips[i][j].trim()) == true) {
+					if (SYMBOLS_NAMES.get(s).trim()
+							.equals(freeStrips[i][j].trim()) == true) {
 						freeReels[i][j] = s;
 						break;
 					}
@@ -287,9 +293,11 @@ public class Main {
 
 		/* Allocate memory for the counters. */
 		baseSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
-		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
+		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES
+				.size()];
 		freeSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
-		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES.size()];
+		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES
+				.size()];
 		baseWinsHistogram = new long[numberOfBins];
 		freeWinsHistogram = new long[numberOfBins];
 		// TODO Counters should be initialized with zeros.
@@ -311,7 +319,8 @@ public class Main {
 	/**
 	 * Single reels spin to fill view with symbols.
 	 *
-	 * @param reels Reels strips.
+	 * @param reels
+	 *            Reels strips.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -338,7 +347,8 @@ public class Main {
 	/**
 	 * Single reels spin to fill view with symbols.
 	 *
-	 * @param reels Reels strips.
+	 * @param reels
+	 *            Reels strips.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -369,7 +379,8 @@ public class Main {
 	/**
 	 * Calculate win in particular line.
 	 *
-	 * @param line Single line.
+	 * @param line
+	 *            Single line.
 	 *
 	 * @return Calculated win.
 	 *
@@ -379,12 +390,12 @@ public class Main {
 		/* Wild index with counter and win amount. */
 		int[][] values = new int[WILD_INDICES.size()][];
 		for (int i = 0; i < WILD_INDICES.size(); i++) {
-			values[i] = new int[] { (Integer) (WILD_INDICES.toArray()[i]), 0, 0 };
+			values[i] = new int[]{(Integer) (WILD_INDICES.toArray()[i]), 0, 0};
 		}
 
 		/* If there is no leading wild there is no wild win. */
 		if (WILD_INDICES.contains(line[0]) == false) {
-			return (new int[] { NO_SYMBOL_INDEX, 0, 0 });
+			return (new int[]{NO_SYMBOL_INDEX, 0, 0});
 		}
 
 		/* Each wild can lead to different level of win. */
@@ -414,7 +425,8 @@ public class Main {
 	/**
 	 * Calculate win in particular line.
 	 *
-	 * @param line Single line.
+	 * @param line
+	 *            Single line.
 	 *
 	 * @return Calculated win.
 	 *
@@ -515,7 +527,8 @@ public class Main {
 	/**
 	 * Initialize an empty line.
 	 * 
-	 * @param size Size of a single line.
+	 * @param size
+	 *            Size of a single line.
 	 * 
 	 * @return Single line as array with no symbols.
 	 *
@@ -534,7 +547,8 @@ public class Main {
 	/**
 	 * Calculate win in all possible lines.
 	 *
-	 * @param view Symbols visible in screen view.
+	 * @param view
+	 *            Symbols visible in screen view.
 	 *
 	 * @return Calculated win.
 	 *
@@ -581,7 +595,8 @@ public class Main {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
 				if (SCATTER_INDICES.contains(view[i][j]) == true) {
-					numberOfScatters.put(view[i][j], numberOfScatters.get(view[i][j]) + 1);
+					numberOfScatters.put(view[i][j],
+							numberOfScatters.get(view[i][j]) + 1);
 				}
 			}
 		}
@@ -589,7 +604,14 @@ public class Main {
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
 			/* Calculate scatter win. */
-			double value = paytable[numberOfScatters.get(scatter)][scatter] * totalBet * scatterMultiplier;
+			int value = 0;
+			if (luckyLadysCharm == true) {
+				value = paytable[numberOfScatters.get(scatter)][scatter]
+						* scatterMultiplier;
+			} else {
+				value = paytable[numberOfScatters.get(scatter)][scatter]
+						* totalBet * scatterMultiplier;
+			}
 
 			/* If there is no win do nothing. */
 			if (value <= 0) {
@@ -598,11 +620,15 @@ public class Main {
 
 			/* Update statistics. */
 			if (value > 0 && freeGamesNumber == 0) {
-				baseSymbolMoney[numberOfScatters.get(scatter)][scatter] += value;
-				baseGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
+				baseSymbolMoney[numberOfScatters
+						.get(scatter)][scatter] += value;
+				baseGameSymbolsHitRate[numberOfScatters
+						.get(scatter)][scatter]++;
 			} else if (value > 0 && freeGamesNumber > 0) {
-				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value * freeGamesMultiplier;
-				freeGameSymbolsHitRate[numberOfScatters.get(scatter)][scatter]++;
+				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value
+						* freeGamesMultiplier;
+				freeGameSymbolsHitRate[numberOfScatters
+						.get(scatter)][scatter]++;
 			}
 
 			/* It is needed if there are more scatter symbols. */
@@ -630,7 +656,8 @@ public class Main {
 		int numberOfScatters = 0;
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				// TODO If there are more than one scatter symbol it is not common all of them
+				// TODO If there are more than one scatter symbol it is not
+				// common all of them
 				// to trigger free games.
 				if (SCATTER_INDICES.contains(view[i][j]) == true) {
 					numberOfScatters++;
@@ -654,14 +681,18 @@ public class Main {
 	/**
 	 * Update histogram information when there is a win.
 	 * 
-	 * @param histogram Histogram array.
-	 * @param biggest   Expected biggest win.
-	 * @param win       Win value.
+	 * @param histogram
+	 *            Histogram array.
+	 * @param biggest
+	 *            Expected biggest win.
+	 * @param win
+	 *            Win value.
 	 */
-	private static void updateHistogram(long[] histogram, int biggest, int win) {
+	private static void updateHistogram(long[] histogram, int biggest,
+			int win) {
 		/*
-		 * If the win is bigger than highest according pay table values mark it in the
-		 * last bin.
+		 * If the win is bigger than highest according pay table values mark it
+		 * in the last bin.
 		 */
 		if (win >= biggest) {
 			histogram[histogram.length - 1]++;
@@ -675,14 +706,15 @@ public class Main {
 	/**
 	 * Expand wilds according Burning Hot rules.
 	 * 
-	 * @param view Screen with symbols.
+	 * @param view
+	 *            Screen with symbols.
 	 */
 	private static boolean burningHotSubstitution(int[][] view) {
 		boolean result = false;
 
 		/* Check wins in all possible lines. */
 		int progress = 0;
-		start: for (int l = 0; l < lines.length; l++) {
+		start : for (int l = 0; l < lines.length; l++) {
 			/* Initialize an empty line. */
 			int[] line = emptyLine(lines[l].length);
 
@@ -691,13 +723,19 @@ public class Main {
 				int index = lines[l][i];
 				line[i] = view[i][index];
 
-				/* If current symbol is not wild there is no need to check for a win. */
+				/*
+				 * If current symbol is not wild there is no need to check for a
+				 * win.
+				 */
 				int substituent = line[i];
 				if (WILD_INDICES.contains(line[i]) == false) {
 					continue;
 				}
 
-				/* If current symbol is wild, but there is no win no expansion is done. */
+				/*
+				 * If current symbol is wild, but there is no win no expansion
+				 * is done.
+				 */
 				if (lineWin(line) <= 0) {
 					continue;
 				}
@@ -710,14 +748,17 @@ public class Main {
 				/* Flag for substitution. */
 				result = true;
 
-				/* If current symbol is wild and there is a win expansion is done. */
+				/*
+				 * If current symbol is wild and there is a win expansion is
+				 * done.
+				 */
 				for (int j = 0; j < view[i].length; j++) {
 					view[i][j] = substituent;
 				}
 
 				/*
-				 * Checking should start form the real beginning, but with track of the
-				 * progressed part.
+				 * Checking should start form the real beginning, but with track
+				 * of the progressed part.
 				 */
 				progress = i;
 				l = -1;
@@ -731,7 +772,8 @@ public class Main {
 	/**
 	 * Expand wilds according Lucky & Wild rules.
 	 * 
-	 * @param view Screen with symbols.
+	 * @param view
+	 *            Screen with symbols.
 	 */
 	private static boolean luckyAndWildSubstitution(int[][] original) {
 		boolean result = false;
@@ -745,7 +787,8 @@ public class Main {
 			}
 		}
 
-		// TODO It should not be substituted by this way, but it will be done like this,
+		// TODO It should not be substituted by this way, but it will be done
+		// like this,
 		// because of the customer request.
 		int substituent = WILD_INDICES.iterator().next();
 
@@ -814,7 +857,8 @@ public class Main {
 		win *= freeGamesMultiplier;
 
 		/*
-		 * Keep values for mathematical expectation and standard deviation calculation.
+		 * Keep values for mathematical expectation and standard deviation
+		 * calculation.
 		 */
 		freeOutcomes.add(win);
 
@@ -847,42 +891,43 @@ public class Main {
 
 		/* Spin is working even in brute force mode. */
 		spin(baseReels);
-//		printView(System.err);
-//		System.err.println();
+		// printView(System.err);
+		// System.err.println();
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
-//			System.err.println(Arrays.deepToString(view));
-//			printView(System.err);
-//			System.err.println();
+			// System.err.println(Arrays.deepToString(view));
+			// printView(System.err);
+			// System.err.println();
 			boolean result = burningHotSubstitution(view);
-//			if (result == true) {
-//				System.err.println(Arrays.deepToString(view));
-//				printView(System.err);
-//				System.err.println();
-//				System.exit(0);
-//			}
+			// if (result == true) {
+			// System.err.println(Arrays.deepToString(view));
+			// printView(System.err);
+			// System.err.println();
+			// System.exit(0);
+			// }
 		}
 
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
-//			System.err.println(Arrays.deepToString(view));
-//			printView(System.err);
-//			System.err.println();
+			// System.err.println(Arrays.deepToString(view));
+			// printView(System.err);
+			// System.err.println();
 			boolean result = luckyAndWildSubstitution(view);
-//			if (result == true) {
-//				System.err.println(Arrays.deepToString(view));
-//				printView(System.err);
-//				System.err.println();
-//				System.exit(0);
-//			}
+			// if (result == true) {
+			// System.err.println(Arrays.deepToString(view));
+			// printView(System.err);
+			// System.err.println();
+			// System.exit(0);
+			// }
 		}
 
 		/* Win accumulated by lines. */
 		int win = linesWin(view) + scatterWin(view);
 
 		/*
-		 * Keep values for mathematical expectation and standard deviation calculation.
+		 * Keep values for mathematical expectation and standard deviation
+		 * calculation.
 		 */
 		baseOutcomes.add(win);
 
@@ -900,7 +945,8 @@ public class Main {
 
 		/* Count in the histogram. */
 		if (win > 0) {
-			updateHistogram(baseWinsHistogram, highestPaytableWin * totalBet, win);
+			updateHistogram(baseWinsHistogram, highestPaytableWin * totalBet,
+					win);
 		}
 
 		/* Check for free games. */
@@ -922,27 +968,48 @@ public class Main {
 	 * @author Todor Balabanov
 	 */
 	private static void printAbout() {
-		System.out.println("*******************************************************************************");
-		System.out.println("* Fruit Machine Simulator with Excel Interface version 0.0.1                  *");
-		System.out.println("* Copyrights (C) 2017 Velbazhd Software LLC                                   *");
-		System.out.println("*                                                                             *");
-		System.out.println("* developed by Todor Balabanov ( todor.balabanov@gmail.com )                  *");
-		System.out.println("* Sofia, Bulgaria                                                             *");
-		System.out.println("*                                                                             *");
-		System.out.println("* This program is free software: you can redistribute it and/or modify        *");
-		System.out.println("* it under the terms of the GNU General Public License as published by        *");
-		System.out.println("* the Free Software Foundation, either version 3 of the License, or           *");
-		System.out.println("* (at your option) any later version.                                         *");
-		System.out.println("*                                                                             *");
-		System.out.println("* This program is distributed in the hope that it will be useful,             *");
-		System.out.println("* but WITHOUT ANY WARRANTY; without even the implied warranty of              *");
-		System.out.println("* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               *");
-		System.out.println("* GNU General Public License for more details.                                *");
-		System.out.println("*                                                                             *");
-		System.out.println("* You should have received a copy of the GNU General Public License           *");
-		System.out.println("* along with this program. If not, see <http://www.gnu.org/licenses/>.        *");
-		System.out.println("*                                                                             *");
-		System.out.println("*******************************************************************************");
+		System.out.println(
+				"*******************************************************************************");
+		System.out.println(
+				"* Fruit Machine Simulator with Excel Interface version 0.0.1                  *");
+		System.out.println(
+				"* Copyrights (C) 2017 Velbazhd Software LLC                                   *");
+		System.out.println(
+				"*                                                                             *");
+		System.out.println(
+				"* developed by Todor Balabanov ( todor.balabanov@gmail.com )                  *");
+		System.out.println(
+				"* Sofia, Bulgaria                                                             *");
+		System.out.println(
+				"*                                                                             *");
+		System.out.println(
+				"* This program is free software: you can redistribute it and/or modify        *");
+		System.out.println(
+				"* it under the terms of the GNU General Public License as published by        *");
+		System.out.println(
+				"* the Free Software Foundation, either version 3 of the License, or           *");
+		System.out.println(
+				"* (at your option) any later version.                                         *");
+		System.out.println(
+				"*                                                                             *");
+		System.out.println(
+				"* This program is distributed in the hope that it will be useful,             *");
+		System.out.println(
+				"* but WITHOUT ANY WARRANTY; without even the implied warranty of              *");
+		System.out.println(
+				"* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               *");
+		System.out.println(
+				"* GNU General Public License for more details.                                *");
+		System.out.println(
+				"*                                                                             *");
+		System.out.println(
+				"* You should have received a copy of the GNU General Public License           *");
+		System.out.println(
+				"* along with this program. If not, see <http://www.gnu.org/licenses/>.        *");
+		System.out.println(
+				"*                                                                             *");
+		System.out.println(
+				"*******************************************************************************");
 	}
 
 	/**
@@ -960,7 +1027,8 @@ public class Main {
 
 			if (SCATTER_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
 				System.out.print("Scatter");
-			} else if (EXTEND_WILD_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+			} else if (EXTEND_WILD_INDICES
+					.contains(SYMBOLS_NUMBERS.get(i)) == true) {
 				System.out.print("Extended");
 			} else if (WILD_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
 				System.out.print("Wild");
@@ -1059,7 +1127,8 @@ public class Main {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES
+					.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; baseReels != null && i < baseReels.length; i++) {
 				for (int j = 0; j < baseReels[i].length; j++) {
@@ -1098,7 +1167,8 @@ public class Main {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES
+					.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; freeReels != null && i < freeReels.length; i++) {
 				for (int j = 0; j < freeReels[i].length; j++) {
@@ -1146,24 +1216,42 @@ public class Main {
 		System.out.println("Lost money:\t" + lostMoney);
 		System.out.println("Total Number of Games:\t" + totalNumberOfGames);
 		System.out.println();
-		System.out.println("Total RTP:\t" + ((double) wonMoney / (double) lostMoney) + "\t\t"
+		System.out.println("Total RTP:\t"
+				+ ((double) wonMoney / (double) lostMoney) + "\t\t"
 				+ (100.0D * (double) wonMoney / (double) lostMoney) + "%");
-		System.out.println("Base Game RTP:\t" + ((double) baseMoney / (double) lostMoney) + "\t\t"
+		System.out.println("Base Game RTP:\t"
+				+ ((double) baseMoney / (double) lostMoney) + "\t\t"
 				+ (100.0D * (double) baseMoney / (double) lostMoney) + "%");
-		System.out.println("Free Game RTP:\t" + ((double) freeMoney / (double) lostMoney) + "\t\t"
+		System.out.println("Free Game RTP:\t"
+				+ ((double) freeMoney / (double) lostMoney) + "\t\t"
 				+ (100.0D * (double) freeMoney / (double) lostMoney) + "%");
 		System.out.println();
-		System.out.println("Hit Frequency in Base Game:\t" + ((double) baseGameHitRate / (double) totalNumberOfGames)
-				+ "\t\t" + (100.0D * (double) baseGameHitRate / (double) totalNumberOfGames) + "%");
+		System.out.println("Hit Frequency in Base Game:\t"
+				+ ((double) baseGameHitRate / (double) totalNumberOfGames)
+				+ "\t\t" + (100.0D * (double) baseGameHitRate
+						/ (double) totalNumberOfGames)
+				+ "%");
 		System.out
-				.println("Hit Frequency in Free Game:\t" + ((double) freeGamesHitRate / (double) totalNumberOfFreeGames)
-						+ "\t\t" + (100.0D * (double) freeGamesHitRate / (double) totalNumberOfFreeGames) + "%");
+				.println(
+						"Hit Frequency in Free Game:\t"
+								+ ((double) freeGamesHitRate
+										/ (double) totalNumberOfFreeGames)
+								+ "\t\t"
+								+ (100.0D * (double) freeGamesHitRate
+										/ (double) totalNumberOfFreeGames)
+								+ "%");
 		System.out.println("Hit Frequency Base Game into Free Game:\t"
-				+ ((double) totalNumberOfFreeGameStarts / (double) totalNumberOfGames) + "\t\t"
-				+ (100.0D * (double) (totalNumberOfFreeGameStarts) / (double) totalNumberOfGames) + "%");
+				+ ((double) totalNumberOfFreeGameStarts
+						/ (double) totalNumberOfGames)
+				+ "\t\t" + (100.0D * (double) (totalNumberOfFreeGameStarts)
+						/ (double) totalNumberOfGames)
+				+ "%");
 		System.out.println("Hit Frequency Free Game into Free Game:\t"
-				+ ((double) totalNumberOfFreeGameRestarts / (double) totalNumberOfFreeGameStarts) + "\t\t"
-				+ (100.0D * (double) (totalNumberOfFreeGameRestarts) / (double) totalNumberOfFreeGameStarts) + "%");
+				+ ((double) totalNumberOfFreeGameRestarts
+						/ (double) totalNumberOfFreeGameStarts)
+				+ "\t\t" + (100.0D * (double) (totalNumberOfFreeGameRestarts)
+						/ (double) totalNumberOfFreeGameStarts)
+				+ "%");
 		System.out.println();
 
 		System.out.println("Max Win in Base Game:\t" + baseMaxWin);
@@ -1179,7 +1267,9 @@ public class Main {
 		for (int j = 0; j < baseSymbolMoney[0].length; j++) {
 			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 			for (int i = 0; i < baseSymbolMoney.length; i++) {
-				System.out.print((double) baseSymbolMoney[i][j] / (double) lostMoney + "\t");
+				System.out.print(
+						(double) baseSymbolMoney[i][j] / (double) lostMoney
+								+ "\t");
 			}
 			System.out.println();
 		}
@@ -1207,7 +1297,8 @@ public class Main {
 		for (int j = 0; j < baseGameSymbolsHitRate[0].length; j++) {
 			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 			for (int i = 0; i < baseGameSymbolsHitRate.length; i++) {
-				System.out.print((double) baseGameSymbolsHitRate[i][j] / (double) totalNumberOfGames + "\t");
+				System.out.print((double) baseGameSymbolsHitRate[i][j]
+						/ (double) totalNumberOfGames + "\t");
 			}
 			System.out.println();
 		}
@@ -1225,8 +1316,8 @@ public class Main {
 			}
 			System.out.println();
 			for (int i = 0, bin = highestPaytableWin * totalBet
-					/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
-							/ baseWinsHistogram.length) {
+					/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin
+							* totalBet / baseWinsHistogram.length) {
 				System.out.print("< " + bin + "\t");
 			}
 		}
@@ -1267,7 +1358,9 @@ public class Main {
 		for (int j = 0; j < freeSymbolMoney[0].length; j++) {
 			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 			for (int i = 0; i < freeSymbolMoney.length; i++) {
-				System.out.print((double) freeSymbolMoney[i][j] / (double) lostMoney + "\t");
+				System.out.print(
+						(double) freeSymbolMoney[i][j] / (double) lostMoney
+								+ "\t");
 			}
 			System.out.println();
 		}
@@ -1281,7 +1374,8 @@ public class Main {
 		for (int j = 0; j < freeGameSymbolsHitRate[0].length; j++) {
 			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
 			for (int i = 0; i < freeGameSymbolsHitRate.length; i++) {
-				System.out.print((double) freeGameSymbolsHitRate[i][j] / (double) totalNumberOfGames + "\t");
+				System.out.print((double) freeGameSymbolsHitRate[i][j]
+						/ (double) totalNumberOfGames + "\t");
 			}
 			System.out.println();
 		}
@@ -1313,8 +1407,8 @@ public class Main {
 			}
 			System.out.println();
 			for (int i = 0, bin = highestPaytableWin * totalBet
-					/ freeWinsHistogram.length; i < freeWinsHistogram.length; i++, bin += highestPaytableWin * totalBet
-							/ freeWinsHistogram.length) {
+					/ freeWinsHistogram.length; i < freeWinsHistogram.length; i++, bin += highestPaytableWin
+							* totalBet / freeWinsHistogram.length) {
 				System.out.print("< " + bin + "\t");
 			}
 		}
@@ -1349,7 +1443,8 @@ public class Main {
 	/**
 	 * Print screen view.
 	 *
-	 * @param out Print stream reference.
+	 * @param out
+	 *            Print stream reference.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -1373,7 +1468,8 @@ public class Main {
 	/**
 	 * Print simulation execution command.
 	 *
-	 * @param args Command line arguments list.
+	 * @param args
+	 *            Command line arguments list.
 	 *
 	 * @author Todor Balabanov
 	 */
@@ -1390,16 +1486,22 @@ public class Main {
 	/**
 	 * Load data structures from ODS file.
 	 * 
-	 * @param inputFileName      Name of the input file.
-	 * @param baseReelsSheetName Name of the base game reels sheet.
-	 * @param freeReelsSheetName Name of the free spins reels sheet.
+	 * @param inputFileName
+	 *            Name of the input file.
+	 * @param baseReelsSheetName
+	 *            Name of the base game reels sheet.
+	 * @param freeReelsSheetName
+	 *            Name of the free spins reels sheet.
 	 */
-	private static void loadGameStructure(String inputFileName, String baseReelsSheetName, String freeReelsSheetName) {
+	private static void loadGameStructure(String inputFileName,
+			String baseReelsSheetName, String freeReelsSheetName) {
 		XSSFWorkbook workbook = null;
 		try {
-			workbook = new XSSFWorkbook(new FileInputStream(new File(inputFileName)));
+			workbook = new XSSFWorkbook(
+					new FileInputStream(new File(inputFileName)));
 		} catch (IOException e) {
-			System.out.println("Input file " + inputFileName + " is not usable!");
+			System.out
+					.println("Input file " + inputFileName + " is not usable!");
 			System.err.println(e);
 			System.exit(0);
 		}
@@ -1408,14 +1510,22 @@ public class Main {
 
 		/* Load common game information. */
 		sheet = workbook.getSheet("Summary");
-		int numberOfReels = (int) sheet.getRow(1).getCell(1).getNumericCellValue();
-		int numberOfRows = (int) sheet.getRow(2).getCell(1).getNumericCellValue();
-		int numberOfLines = (int) sheet.getRow(3).getCell(1).getNumericCellValue();
-		int numberOfSymbols = (int) sheet.getRow(4).getCell(1).getNumericCellValue();
-		// double rtp = targetRtp = sheet.getRow(5).getCell(1).getNumericCellValue();
-		scatterMultiplier = (int) (sheet.getRow(7).getCell(1).getNumericCellValue());
-		wildInLineMultiplier = (int) sheet.getRow(8).getCell(1).getNumericCellValue();
-		freeGamesMultiplier = (int) sheet.getRow(9).getCell(1).getNumericCellValue();
+		int numberOfReels = (int) sheet.getRow(1).getCell(1)
+				.getNumericCellValue();
+		int numberOfRows = (int) sheet.getRow(2).getCell(1)
+				.getNumericCellValue();
+		int numberOfLines = (int) sheet.getRow(3).getCell(1)
+				.getNumericCellValue();
+		int numberOfSymbols = (int) sheet.getRow(4).getCell(1)
+				.getNumericCellValue();
+		// double rtp = targetRtp =
+		// sheet.getRow(5).getCell(1).getNumericCellValue();
+		scatterMultiplier = (int) (sheet.getRow(7).getCell(1)
+				.getNumericCellValue());
+		wildInLineMultiplier = (int) sheet.getRow(8).getCell(1)
+				.getNumericCellValue();
+		freeGamesMultiplier = (int) sheet.getRow(9).getCell(1)
+				.getNumericCellValue();
 
 		/* Store all symbol names and mark special like wilds and scatters. */
 		WILD_INDICES.clear();
@@ -1424,18 +1534,22 @@ public class Main {
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
 			SYMBOLS_NAMES.add(sheet.getRow(s).getCell(0).getStringCellValue());
-			SYMBOLS_NUMBERS.add((int) sheet.getRow(s).getCell(2).getNumericCellValue());
+			SYMBOLS_NUMBERS.add(
+					(int) sheet.getRow(s).getCell(2).getNumericCellValue());
 
-			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Wild") == true) {
+			if (sheet.getRow(s).getCell(1).getStringCellValue()
+					.contains("Wild") == true) {
 				WILD_INDICES.add(s - 1);
 			}
 
-			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Extend") == true) {
+			if (sheet.getRow(s).getCell(1).getStringCellValue()
+					.contains("Extend") == true) {
 				WILD_INDICES.add(s - 1);
 				EXTEND_WILD_INDICES.add(s - 1);
 			}
 
-			if (sheet.getRow(s).getCell(1).getStringCellValue().contains("Scatter") == true) {
+			if (sheet.getRow(s).getCell(1).getStringCellValue()
+					.contains("Scatter") == true) {
 				SCATTER_INDICES.add(s - 1);
 			}
 		}
@@ -1445,7 +1559,8 @@ public class Main {
 		paytable = new int[numberOfReels + 1][numberOfSymbols];
 		for (int r = 1; r <= numberOfSymbols; r++) {
 			for (int c = 1; c <= numberOfReels; c++) {
-				paytable[c][r - 1] = (int) (sheet.getRow(r).getCell(numberOfReels - c + 1).getNumericCellValue());
+				paytable[c][r - 1] = (int) (sheet.getRow(r)
+						.getCell(numberOfReels - c + 1).getNumericCellValue());
 			}
 		}
 
@@ -1455,8 +1570,8 @@ public class Main {
 		for (int l = 0; l < numberOfLines; l++) {
 			for (int r = 0; r < numberOfRows; r++) {
 				for (int c = 0; c < numberOfReels; c++) {
-					if (sheet.getRow(l * (numberOfRows + 1) + r).getCell(c).getStringCellValue()
-							.contains("*") == true) {
+					if (sheet.getRow(l * (numberOfRows + 1) + r).getCell(c)
+							.getStringCellValue().contains("*") == true) {
 						lines[l][c] = r;
 					}
 				}
@@ -1472,7 +1587,8 @@ public class Main {
 			for (int r = 0; true; r++) {
 				try {
 					/* Check for valid symbol values. */
-					String value = sheet.getRow(r).getCell(c).getStringCellValue();
+					String value = sheet.getRow(r).getCell(c)
+							.getStringCellValue();
 					if (SYMBOLS_NAMES.contains(value) == false) {
 						break;
 					}
@@ -1486,7 +1602,8 @@ public class Main {
 			/* Read the reel itself. */
 			baseStrips[c] = new String[length];
 			for (int r = 0; r < baseStrips[c].length; r++) {
-				baseStrips[c][r] = sheet.getRow(r).getCell(c).getStringCellValue();
+				baseStrips[c][r] = sheet.getRow(r).getCell(c)
+						.getStringCellValue();
 			}
 		}
 
@@ -1499,7 +1616,8 @@ public class Main {
 			for (int r = 0; true; r++) {
 				try {
 					/* Check for valid symbol values. */
-					String value = sheet.getRow(r).getCell(c).getStringCellValue();
+					String value = sheet.getRow(r).getCell(c)
+							.getStringCellValue();
 					if (SYMBOLS_NAMES.contains(value) == false) {
 						break;
 					}
@@ -1515,7 +1633,8 @@ public class Main {
 			 */
 			freeStrips[c] = new String[length];
 			for (int r = 0; r < freeStrips[c].length; r++) {
-				freeStrips[c][r] = sheet.getRow(r).getCell(c).getStringCellValue();
+				freeStrips[c][r] = sheet.getRow(r).getCell(c)
+						.getStringCellValue();
 			}
 		}
 
@@ -1525,7 +1644,8 @@ public class Main {
 	/**
 	 * Generate initial reels according pay table values.
 	 * 
-	 * @param targetLength Initial desired length of the reels.
+	 * @param targetLength
+	 *            Initial desired length of the reels.
 	 * 
 	 * @return Array of symbols as initial strips.
 	 */
@@ -1596,10 +1716,13 @@ public class Main {
 	/**
 	 * Shuffle loaded reals in stack of symbols.
 	 * 
-	 * @param strips    Symbol names as array.
-	 * @param stackSize Size of the stack. If it is one there is no stack and it is
-	 *                  regular shuffling.
-	 * @param repeats   Number of allowed repeats in neighboring stacks.
+	 * @param strips
+	 *            Symbol names as array.
+	 * @param stackSize
+	 *            Size of the stack. If it is one there is no stack and it is
+	 *            regular shuffling.
+	 * @param repeats
+	 *            Number of allowed repeats in neighboring stacks.
 	 */
 	private static void shuffle(String[][] strips, int stackSize, int repeats) {
 		/* Stack of symbols can not be negative or zero. */
@@ -1635,8 +1758,8 @@ public class Main {
 				}
 
 				/*
-				 * If the next symbol is different than the symbols in the current group create
-				 * and add new group.
+				 * If the next symbol is different than the symbols in the
+				 * current group create and add new group.
 				 */
 				if (current.contains(symbol) == false) {
 					current = new ArrayList<String>();
@@ -1654,7 +1777,10 @@ public class Main {
 				}
 			}
 
-			/* Do the real shuffling until there is no same groups next to each other. */
+			/*
+			 * Do the real shuffling until there is no same groups next to each
+			 * other.
+			 */
 			int counter;
 			Collections.shuffle(stacks);
 			do {
@@ -1665,22 +1791,27 @@ public class Main {
 					List<String> right = stacks.get(index1);
 
 					/*
-					 * If first symbols in the groups are not equal there is nothing to be done.
+					 * If first symbols in the groups are not equal there is
+					 * nothing to be done.
 					 */
 					if (left.get(0).equals(right.get(0)) == false) {
 						continue;
 					}
 
 					/*
-					 * Probabilistic try [size] times to find different stack. It is probabilistic,
-					 * because it is possible different stacks not to exist. For example when the
-					 * reel has only one symbol in it.
+					 * Probabilistic try [size] times to find different stack.
+					 * It is probabilistic, because it is possible different
+					 * stacks not to exist. For example when the reel has only
+					 * one symbol in it.
 					 */
 					for (int j = 0; j < stacks.size(); j++) {
 						int index2 = PRNG.nextInt(stacks.size());
 						List<String> random = stacks.get(index2);
 
-						/* If both stacks are equal there is no reason to swap them. */
+						/*
+						 * If both stacks are equal there is no reason to swap
+						 * them.
+						 */
 						if (random.get(0).equals(right.get(0)) == true) {
 							continue;
 						}
@@ -1725,15 +1856,17 @@ public class Main {
 	/**
 	 * Application single entry point method.
 	 * 
-	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base Reels
-	 * 95.5 RTP"
+	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base
+	 * Reels 95.5 RTP"
 	 * 
-	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000 -freeoff
-	 * -basereels "Base Reels 95.5 RTP"
+	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000
+	 * -freeoff -basereels "Base Reels 95.5 RTP"
 	 * 
-	 * @param args Command line arguments.
+	 * @param args
+	 *            Command line arguments.
 	 * 
-	 * @throws ParseException When there is a problem with command line arguments.
+	 * @throws ParseException
+	 *             When there is a problem with command line arguments.
 	 */
 	public static void main(String[] args) throws ParseException {
 		/* Print execution command. */
@@ -1744,38 +1877,58 @@ public class Main {
 		Options options = new Options();
 		options.addOption(new Option("h", "help", false, "Help screen."));
 
-		options.addOption(Option.builder("input").argName("file").hasArg().valueSeparator()
-				.desc("Input Excel file name.").build());
+		options.addOption(Option.builder("input").argName("file").hasArg()
+				.valueSeparator().desc("Input Excel file name.").build());
 
-		options.addOption(Option.builder("basereels").argName("sheet").hasArg().valueSeparator()
-				.desc("Excel sheet name with base game reels.").build());
-		options.addOption(Option.builder("freereels").argName("sheet").hasArg().valueSeparator()
+		options.addOption(Option.builder("basereels").argName("sheet").hasArg()
+				.valueSeparator().desc("Excel sheet name with base game reels.")
+				.build());
+		options.addOption(Option.builder("freereels").argName("sheet").hasArg()
+				.valueSeparator()
 				.desc("Excel sheet name with free spins reels.").build());
 
-		options.addOption(Option.builder("g").longOpt("generations").argName("number").hasArg().valueSeparator()
+		options.addOption(Option.builder("g").longOpt("generations")
+				.argName("number").hasArg().valueSeparator()
 				.desc("Number of games (default 20m).").build());
-		options.addOption(Option.builder("p").longOpt("progress").argName("number").hasArg().valueSeparator()
-				.desc("Progress on each iteration number (default 1m).").build());
+		options.addOption(Option.builder("p").longOpt("progress")
+				.argName("number").hasArg().valueSeparator()
+				.desc("Progress on each iteration number (default 1m).")
+				.build());
 
-		options.addOption(Option.builder("histogram").argName("size").hasArg().valueSeparator()
-				.desc("Histograms of the wins with particular number of bins (default 1000).").build());
+		options.addOption(Option.builder("histogram").argName("size").hasArg()
+				.valueSeparator()
+				.desc("Histograms of the wins with particular number of bins (default 1000).")
+				.build());
 
-		options.addOption(Option.builder("initial").argName("number").hasArg().valueSeparator()
-				.desc("Generate initial reels according paytable values and reel target length.").build());
-		options.addOption(Option.builder("shuffle").argName("number").hasArg().valueSeparator()
-				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).").build());
-		options.addOption(Option.builder("repeats").argName("number").hasArg().valueSeparator()
-				.desc("Determine shuffle stacked repeats (default 1 - no repeats).").build());
+		options.addOption(Option.builder("initial").argName("number").hasArg()
+				.valueSeparator()
+				.desc("Generate initial reels according paytable values and reel target length.")
+				.build());
+		options.addOption(Option.builder("shuffle").argName("number").hasArg()
+				.valueSeparator()
+				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).")
+				.build());
+		options.addOption(Option.builder("repeats").argName("number").hasArg()
+				.valueSeparator()
+				.desc("Determine shuffle stacked repeats (default 1 - no repeats).")
+				.build());
 
-		options.addOption(new Option("bruteforce", false, "Switch on brute force only for the base game."));
-		options.addOption(new Option("freeoff", false, "Switch off free spins."));
+		options.addOption(new Option("bruteforce", false,
+				"Switch on brute force only for the base game."));
+		options.addOption(
+				new Option("freeoff", false, "Switch off free spins."));
 		options.addOption(new Option("wildsoff", false, "Switch off wilds."));
-		options.addOption(new Option("burninghot", false, "Burning Hot style of wilds expansion."));
-		options.addOption(new Option("luckywild", false, "Lucky & Wild style of wilds expansion."));
-		options.addOption(new Option("luckyladyscharm", false, "Lucky Lady's Charm rules of simulation."));
+		options.addOption(new Option("burninghot", false,
+				"Burning Hot style of wilds expansion."));
+		options.addOption(new Option("luckywild", false,
+				"Lucky & Wild style of wilds expansion."));
+		options.addOption(new Option("luckyladyscharm", false,
+				"Lucky Lady's Charm rules of simulation."));
 
-		options.addOption(new Option("verbose", false, "Print intermediate results."));
-		options.addOption(new Option("verify", false, "Print input data structures."));
+		options.addOption(
+				new Option("verbose", false, "Print intermediate results."));
+		options.addOption(
+				new Option("verify", false, "Print input data structures."));
 
 		/* Parse command line arguments. */
 		CommandLineParser parser = new DefaultParser();
@@ -1828,17 +1981,21 @@ public class Main {
 
 		/* Number of bins used in the wins histogram. */
 		if (commands.hasOption("histogram") == true) {
-			numberOfBins = Integer.valueOf(commands.getOptionValue("histogram"));
+			numberOfBins = Integer
+					.valueOf(commands.getOptionValue("histogram"));
 		}
 
 		/* Reading of input file and reels data sheet. */
-		loadGameStructure(inputFileName, baseReelsSheetName, freeReelsSheetName);
+		loadGameStructure(inputFileName, baseReelsSheetName,
+				freeReelsSheetName);
 		initialize();
 
 		/* Generate initial reels according pay table values. */
 		if (commands.hasOption("initial") == true) {
-			baseStrips = initialReels(Integer.valueOf(commands.getOptionValue("initial")));
-			freeStrips = initialReels(Integer.valueOf(commands.getOptionValue("initial")));
+			baseStrips = initialReels(
+					Integer.valueOf(commands.getOptionValue("initial")));
+			freeStrips = initialReels(
+					Integer.valueOf(commands.getOptionValue("initial")));
 			initialize();
 			printDataStructures();
 			System.exit(0);
@@ -1846,13 +2003,18 @@ public class Main {
 
 		/* Keep number of allowed stacks repeats. */
 		if (commands.hasOption("repeats") == true) {
-			numberOfAllowedStackRepeats = Integer.valueOf(commands.getOptionValue("repeats"));
+			numberOfAllowedStackRepeats = Integer
+					.valueOf(commands.getOptionValue("repeats"));
 		}
 
 		/* Shuffle loaded reels with stacked size value. */
 		if (commands.hasOption("shuffle") == true) {
-			shuffle(baseStrips, Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
-			shuffle(freeStrips, Integer.valueOf(commands.getOptionValue("shuffle")), numberOfAllowedStackRepeats);
+			shuffle(baseStrips,
+					Integer.valueOf(commands.getOptionValue("shuffle")),
+					numberOfAllowedStackRepeats);
+			shuffle(freeStrips,
+					Integer.valueOf(commands.getOptionValue("shuffle")),
+					numberOfAllowedStackRepeats);
 			initialize();
 			printDataStructures();
 			System.exit(0);
@@ -1909,7 +2071,8 @@ public class Main {
 		if (commands.hasOption("generations") == true) {
 			try {
 				numberOfSimulations = Long
-						.valueOf(commands.getOptionValue("generations").replace("m", "000000").replace("k", "000"));
+						.valueOf(commands.getOptionValue("generations")
+								.replace("m", "000000").replace("k", "000"));
 			} catch (Exception e) {
 			}
 		}
@@ -1918,7 +2081,8 @@ public class Main {
 		if (commands.hasOption("progress") == true) {
 			try {
 				progressPrintOnIteration = Long
-						.valueOf(commands.getOptionValue("progress").replace("m", "000000").replace("k", "000"));
+						.valueOf(commands.getOptionValue("progress")
+								.replace("m", "000000").replace("k", "000"));
 				verboseOutput = true;
 			} catch (Exception e) {
 			}
@@ -1940,11 +2104,14 @@ public class Main {
 				try {
 					System.out.print(g + " of " + numberOfSimulations);
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", 100D * ((double) wonMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) wonMoney / (double) lostMoney)));
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", 100D * ((double) baseMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) baseMoney / (double) lostMoney)));
 					System.out.print("\t");
-					System.out.print(String.format("  %6.2f", 100D * ((double) freeMoney / (double) lostMoney)));
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) freeMoney / (double) lostMoney)));
 				} catch (Exception e) {
 					System.err.println(e);
 				}
@@ -1958,8 +2125,10 @@ public class Main {
 			singleBaseGame();
 		}
 
-		System.out.println("********************************************************************************");
+		System.out.println(
+				"********************************************************************************");
 		printStatistics();
-		System.out.println("********************************************************************************");
+		System.out.println(
+				"********************************************************************************");
 	}
 }
