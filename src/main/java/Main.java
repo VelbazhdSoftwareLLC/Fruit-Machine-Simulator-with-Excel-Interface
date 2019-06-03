@@ -161,6 +161,9 @@ public class Main {
 	/** Total number of free spins started. */
 	private static long totalNumberOfFreeGameRestarts = 0L;
 
+	/** Maximum number of free games in a single start. */
+	private static int maxSingleRunFreeGames;
+
 	/** Hit rate of wins in base game. */
 	private static long baseGameHitRate = 0L;
 
@@ -953,12 +956,17 @@ public class Main {
 		freeGamesSetup();
 
 		/* Play all free games. */
+		int singleRunFreeGames = 0;
 		while (freeGamesNumber > 0) {
 			totalNumberOfFreeGames++;
 
 			singleFreeGame();
-
+			singleRunFreeGames++;
+			
 			freeGamesNumber--;
+		}
+		if(singleRunFreeGames > maxSingleRunFreeGames) {
+			maxSingleRunFreeGames = singleRunFreeGames;
 		}
 	}
 
@@ -1256,6 +1264,7 @@ public class Main {
 
 		System.out.println("Max Win in Base Game:\t" + baseMaxWin);
 		System.out.println("Max Win in Free Game:\t" + freeMaxWin);
+		System.out.println("Max Number of Free Games in Single Run:\t" + maxSingleRunFreeGames);
 		System.out.println();
 
 		System.out.println("Base Game Symbols RTP:");
