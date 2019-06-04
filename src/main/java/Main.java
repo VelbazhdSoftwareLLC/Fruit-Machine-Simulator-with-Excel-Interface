@@ -191,8 +191,11 @@ public class Main {
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
 
-	/** Number of bins used in the histogram. */
-	private static int numberOfBins = 1000;
+	/** Size of the first bin in the histogram. */
+	private static int initialBin = 1;
+
+	/** Increment used for next bin in the histogram. */
+	private static int binIncrement = 0;
 
 	/** Number of allowed stack repeats in the shuffling process. */
 	private static int numberOfAllowedStackRepeats = 1;
@@ -210,16 +213,10 @@ public class Main {
 	private static long[][] freeGameSymbolsHitRate = {};
 
 	/** Distribution of the wins according their amount in the base game. */
-	private static long baseWinsHistogram[] = {};
+	private static Map<Integer, Long> baseWinsHistogram = new HashMap<Integer, Long>();
 
 	/** Distribution of the wins according their amount in the free spins. */
-	private static long freeWinsHistogram[] = {};
-
-	/**
-	 * Highest win according pay table. It is used in wins histogram
-	 * calculations.
-	 */
-	private static int highestPaytableWin = 0;
+	private static Map<Integer, Long> freeWinsHistogram = new HashMap<Integer, Long>();
 
 	/**
 	 * Calculate all combinations in base game.
@@ -301,19 +298,7 @@ public class Main {
 		freeSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
 		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES
 				.size()];
-		baseWinsHistogram = new long[numberOfBins];
-		freeWinsHistogram = new long[numberOfBins];
 		// TODO Counters should be initialized with zeros.
-
-		/* Calculate highest win according total bet and pay table values. */
-		highestPaytableWin = 0;
-		for (int i = 0; i < paytable.length; i++) {
-			for (int j = 0; j < paytable[i].length; j++) {
-				if (highestPaytableWin < paytable[i][j]) {
-					highestPaytableWin = paytable[i][j];
-				}
-			}
-		}
 
 		baseOutcomes.clear();
 		freeOutcomes.clear();
@@ -660,8 +645,7 @@ public class Main {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
 				// TODO If there are more than one scatter symbol it is not
-				// common all of them
-				// to trigger free games.
+				// common all of them to trigger free games.
 				if (SCATTER_INDICES.contains(view[i][j]) == true) {
 					numberOfScatters++;
 				}
@@ -686,24 +670,20 @@ public class Main {
 	 * 
 	 * @param histogram
 	 *            Histogram array.
-	 * @param biggest
-	 *            Expected biggest win.
 	 * @param win
 	 *            Win value.
 	 */
-	private static void updateHistogram(long[] histogram, int biggest,
-			int win) {
+	private static void updateHistogram(Map<Integer, Long> histogram,
+			Integer win) {
 		/*
-		 * If the win is bigger than highest according pay table values mark it
-		 * in the last bin.
+		 * If the win is bigger than array cells available the win is not
+		 * counted.
 		 */
-		if (win >= biggest) {
-			histogram[histogram.length - 1]++;
-			return;
+		if (histogram.containsKey(win) == false) {
+			histogram.put(win, 1L);
+		} else {
+			histogram.put(win, histogram.get(win) + 1L);
 		}
-
-		int index = histogram.length * win / biggest;
-		histogram[index]++;
 	}
 
 	/**
@@ -877,6 +857,11 @@ public class Main {
 			freeGamesHitRate++;
 		}
 
+		/* Count in the histogram. */
+		if (win > 0) {
+			updateHistogram(freeWinsHistogram, win);
+		}
+
 		/* Check for free games. */
 		freeGamesSetup();
 	}
@@ -948,8 +933,7 @@ public class Main {
 
 		/* Count in the histogram. */
 		if (win > 0) {
-			updateHistogram(baseWinsHistogram, highestPaytableWin * totalBet,
-					win);
+			updateHistogram(baseWinsHistogram, win);
 		}
 
 		/* Check for free games. */
@@ -962,10 +946,10 @@ public class Main {
 
 			singleFreeGame();
 			singleRunFreeGames++;
-			
+
 			freeGamesNumber--;
 		}
-		if(singleRunFreeGames > maxSingleRunFreeGames) {
+		if (singleRunFreeGames > maxSingleRunFreeGames) {
 			maxSingleRunFreeGames = singleRunFreeGames;
 		}
 	}
@@ -1264,7 +1248,100 @@ public class Main {
 
 		System.out.println("Max Win in Base Game:\t" + baseMaxWin);
 		System.out.println("Max Win in Free Game:\t" + freeMaxWin);
-		System.out.println("Max Number of Free Games in Single Run:\t" + maxSingleRunFreeGames);
+		System.out.println("Max Number of Free Games in Single Run:\t"
+				+ maxSingleRunFreeGames);
+		System.out.println();
+		System.out.print("Base Game Win Mean:\t");
+		/* Mean */ {
+			double mean = 0;
+			for (Integer value : baseOutcomes) {
+				mean += value;
+			}
+			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+			System.out.println(mean);
+		}
+		System.out.print("Base Game Win Standard Deviation:\t");
+		/* Standard Deviation */ {
+			double mean = 0;
+			for (Integer value : baseOutcomes) {
+				mean += value;
+			}
+			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+
+			double deviation = 0;
+			for (Integer value : baseOutcomes) {
+				deviation += (value - mean) * (value - mean);
+			}
+			deviation /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
+			deviation = Math.sqrt(deviation);
+			System.out.println(deviation);
+		}
+		System.out.print("Free Games Win Mean:\t");
+		/* Mean */ {
+			double mean = 0;
+			for (Integer value : freeOutcomes) {
+				mean += value;
+			}
+			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+			System.out.println(mean);
+		}
+		System.out.print("Free Games Win Standard Deviation:\t");
+		/* Standard Deviation */ {
+			double mean = 0;
+			for (Integer value : freeOutcomes) {
+				mean += value;
+			}
+			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+
+			double deviation = 0;
+			for (Integer value : freeOutcomes) {
+				deviation += (value - mean) * (value - mean);
+			}
+			deviation /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
+			deviation = Math.sqrt(deviation);
+			System.out.println(deviation);
+		}
+		System.out.println();
+		System.out.println("Base Game Wins Histogram:");
+		/* Histogram. */ {
+			for (int bin = initialBin; bin < baseMaxWin; bin += bin
+					+ binIncrement) {
+				System.out.print("< " + bin + "\t");
+			}
+			System.out.println();
+			for (int left = 0, right = initialBin; right < baseMaxWin; left = right, right += right
+					+ binIncrement) {
+				double sum = 0;
+				for (int value = left; value < right; value++) {
+					if (baseWinsHistogram.containsKey(value) == false) {
+						continue;
+					}
+					sum += baseWinsHistogram.get(value);
+				}
+				System.out.print(sum + "\t");
+			}
+		}
+		System.out.println();
+		System.out.println("Free Games Wins Histogram:");
+		/* Histogram. */ {
+			for (int bin = initialBin; bin < freeMaxWin; bin += bin
+					+ binIncrement) {
+				System.out.print("< " + bin + "\t");
+			}
+			System.out.println();
+			for (int left = 0, right = initialBin; right < freeMaxWin; left = right, right += right
+					+ binIncrement) {
+				double sum = 0;
+				for (int value = left; value < right; value++) {
+					if (freeWinsHistogram.containsKey(value) == false) {
+						continue;
+					}
+					sum += freeWinsHistogram.get(value);
+				}
+				System.out.print(sum + "\t");
+			}
+		}
+		System.out.println();
 		System.out.println();
 
 		System.out.println("Base Game Symbols RTP:");
@@ -1310,51 +1387,6 @@ public class Main {
 						/ (double) totalNumberOfGames + "\t");
 			}
 			System.out.println();
-		}
-		System.out.println();
-		System.out.println("Base Game Wins Histogram:");
-		/* Histogram. */ {
-			double sum = 0;
-			for (int i = 0; i < baseWinsHistogram.length; i++) {
-				System.out.print(baseWinsHistogram[i] + "\t");
-				sum += baseWinsHistogram[i];
-			}
-			System.out.println();
-			for (int i = 0; i < baseWinsHistogram.length; i++) {
-				System.out.print(100D * baseWinsHistogram[i] / sum + "\t");
-			}
-			System.out.println();
-			for (int i = 0, bin = highestPaytableWin * totalBet
-					/ baseWinsHistogram.length; i < baseWinsHistogram.length; i++, bin += highestPaytableWin
-							* totalBet / baseWinsHistogram.length) {
-				System.out.print("< " + bin + "\t");
-			}
-		}
-		System.out.println();
-		System.out.print("Base Game Win Mean:\t");
-		/* Mean */ {
-			double mean = 0;
-			for (Integer value : baseOutcomes) {
-				mean += value;
-			}
-			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
-			System.out.println(mean);
-		}
-		System.out.print("Base Game Win Standard Deviation:\t");
-		/* Standard Deviation */ {
-			double mean = 0;
-			for (Integer value : baseOutcomes) {
-				mean += value;
-			}
-			mean /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
-
-			double deviation = 0;
-			for (Integer value : baseOutcomes) {
-				deviation += (value - mean) * (value - mean);
-			}
-			deviation /= baseOutcomes.size() != 0 ? baseOutcomes.size() : 1;
-			deviation = Math.sqrt(deviation);
-			System.out.println(deviation);
 		}
 		System.out.println();
 
@@ -1403,50 +1435,6 @@ public class Main {
 			System.out.println();
 		}
 		System.out.println();
-		System.out.println("Free Games Wins Histogram:");
-		/* Histogram. */ {
-			double sum = 0;
-			for (int i = 0; i < freeWinsHistogram.length; i++) {
-				System.out.print(freeWinsHistogram[i] + "\t");
-				sum += freeWinsHistogram[i];
-			}
-			System.out.println();
-			for (int i = 0; i < freeWinsHistogram.length; i++) {
-				System.out.print(100D * freeWinsHistogram[i] / sum + "\t");
-			}
-			System.out.println();
-			for (int i = 0, bin = highestPaytableWin * totalBet
-					/ freeWinsHistogram.length; i < freeWinsHistogram.length; i++, bin += highestPaytableWin
-							* totalBet / freeWinsHistogram.length) {
-				System.out.print("< " + bin + "\t");
-			}
-		}
-		System.out.println();
-		System.out.print("Free Games Win Mean:\t");
-		/* Mean */ {
-			double mean = 0;
-			for (Integer value : freeOutcomes) {
-				mean += value;
-			}
-			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
-			System.out.println(mean);
-		}
-		System.out.print("Free Games Win Standard Deviation:\t");
-		/* Standard Deviation */ {
-			double mean = 0;
-			for (Integer value : freeOutcomes) {
-				mean += value;
-			}
-			mean /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
-
-			double deviation = 0;
-			for (Integer value : freeOutcomes) {
-				deviation += (value - mean) * (value - mean);
-			}
-			deviation /= freeOutcomes.size() != 0 ? freeOutcomes.size() : 1;
-			deviation = Math.sqrt(deviation);
-			System.out.println(deviation);
-		}
 	}
 
 	/**
@@ -1868,8 +1856,8 @@ public class Main {
 	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base
 	 * Reels 95.5 RTP"
 	 * 
-	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-histogram 2000
-	 * -freeoff -basereels "Base Reels 95.5 RTP"
+	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-binsize 1
+	 * -binincrement 0 -freeoff -basereels "Base Reels 95.5 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
@@ -1904,9 +1892,13 @@ public class Main {
 				.desc("Progress on each iteration number (default 1m).")
 				.build());
 
-		options.addOption(Option.builder("histogram").argName("size").hasArg()
+		options.addOption(Option.builder("binsize").argName("size").hasArg()
 				.valueSeparator()
-				.desc("Histograms of the wins with particular number of bins (default 1000).")
+				.desc("Histograms of the wins with initial bin size (default 1).")
+				.build());
+		options.addOption(Option.builder("binincrement").argName("size")
+				.hasArg().valueSeparator()
+				.desc("Histograms of the wins with bin increment for next bin (default 0).")
 				.build());
 
 		options.addOption(Option.builder("initial").argName("number").hasArg()
@@ -1989,9 +1981,14 @@ public class Main {
 		}
 
 		/* Number of bins used in the wins histogram. */
-		if (commands.hasOption("histogram") == true) {
-			numberOfBins = Integer
-					.valueOf(commands.getOptionValue("histogram"));
+		if (commands.hasOption("binsize") == true) {
+			initialBin = Integer.valueOf(commands.getOptionValue("binsize"));
+		}
+
+		/* Number of bins used in the wins histogram. */
+		if (commands.hasOption("binincrement") == true) {
+			binIncrement = Integer
+					.valueOf(commands.getOptionValue("binincrement"));
 		}
 
 		/* Reading of input file and reels data sheet. */
