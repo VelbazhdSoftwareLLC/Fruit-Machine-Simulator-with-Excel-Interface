@@ -1,8 +1,7 @@
-
 /*==============================================================================
 *                                                                              *
 * Fruit Machine Simulator with Excel Interface version 1.0.0                   *
-* Copyrights (C) 2017 Velbazhd Software LLC                                    *
+* Copyrights (C) 2017-2019 Velbazhd Software LLC                               *
 *                                                                              *
 * developed by Todor Balabanov ( todor.balabanov@gmail.com )                   *
 * Sofia, Bulgaria                                                              *
@@ -187,6 +186,9 @@ public class Main {
 
 	/** Lucky Lady's Charm style of simulation flag. */
 	private static boolean luckyLadysCharm = false;
+
+	/** Age of Troy style of simulation flag. */
+	private static boolean ageOfTroy = false;
 
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
@@ -660,6 +662,18 @@ public class Main {
 				totalNumberOfFreeGameStarts++;
 			} else if (numberOfScatters >= 3 && freeGamesNumber > 0) {
 				freeGamesNumber += 15;
+				totalNumberOfFreeGameRestarts++;
+			}
+		}
+
+		/* Adjust number of free spins according Age of Troy rules */
+		if (ageOfTroy == true) {
+			/* In base game 3 scatters turn into free spins. */
+			if (numberOfScatters == 3 && freeGamesNumber == 0) {
+				freeGamesNumber = 12;
+				totalNumberOfFreeGameStarts++;
+			} else if (numberOfScatters == 3 && freeGamesNumber > 0) {
+				freeGamesNumber += 12;
 				totalNumberOfFreeGameRestarts++;
 			}
 		}
@@ -1925,6 +1939,8 @@ public class Main {
 				"Lucky & Wild style of wilds expansion."));
 		options.addOption(new Option("luckyladyscharm", false,
 				"Lucky Lady's Charm rules of simulation."));
+		options.addOption(new Option("ageoftroy", false,
+				"Age of Troy rules of simulation."));
 
 		options.addOption(
 				new Option("verbose", false, "Print intermediate results."));
@@ -2055,6 +2071,11 @@ public class Main {
 		/* Switch on Lucky Lady's Charm rules for the simulation. */
 		if (commands.hasOption("luckyladyscharm") == true) {
 			luckyLadysCharm = true;
+		}
+
+		/* Switch on Age of Troy rules for the simulation. */
+		if (commands.hasOption("ageoftroy") == true) {
+			ageOfTroy = true;
 		}
 
 		/* Run brute force instead of Monte Carlo simulation. */
