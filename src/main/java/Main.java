@@ -190,6 +190,9 @@ public class Main {
 	/** Age of Troy style of simulation flag. */
 	private static boolean ageOfTroy = false;
 
+	/** 20 Hot Blast style of simulation flag. */
+	private static boolean twentyHotBlast = false;
+
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
 
@@ -1941,6 +1944,8 @@ public class Main {
 				"Lucky Lady's Charm rules of simulation."));
 		options.addOption(new Option("ageoftroy", false,
 				"Age of Troy rules of simulation."));
+		options.addOption(new Option("twentyhotblast", false,
+				"20 Hot Blast rules of simulation."));
 
 		options.addOption(
 				new Option("verbose", false, "Print intermediate results."));
@@ -2078,6 +2083,11 @@ public class Main {
 			ageOfTroy = true;
 		}
 
+		/* Switch on 20 Hot Blast rules for the simulation. */
+		if (commands.hasOption("twentyhotblast") == true) {
+			twentyHotBlast = true;
+		}
+		
 		/* Run brute force instead of Monte Carlo simulation. */
 		if (commands.hasOption("bruteforce") == true) {
 			bruteForce = true;
