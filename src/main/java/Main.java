@@ -101,6 +101,9 @@ public class Main {
 	/** Current visible symbols on the screen. */
 	private static int[][] view = {};
 
+	/** Cells on the screen which took part of the wins. */
+	private static boolean[][] winners = {};
+
 	/** Current free spins multiplier. */
 	private static int freeGamesMultiplier = 0;
 
@@ -338,6 +341,20 @@ public class Main {
 	}
 
 	/**
+	 * Clear flags for the cells used in wins formation.
+	 * 
+	 * @param winners
+	 *            Flags of the cells.
+	 */
+	private static void clear(boolean winners[][]) {
+		for (int i = 0; i < winners.length; i++) {
+			for (int j = 0; j < winners[i].length; j++) {
+				winners[i][j] = false;
+			}
+		}
+	}
+
+	/**
 	 * Single reels spin to fill view with symbols.
 	 *
 	 * @param reels
@@ -505,6 +522,7 @@ public class Main {
 			win = wildWin[2];
 		}
 
+		// TODO Do it outside of the win estimation function!
 		/* Update statistics. */
 		if (win > 0 && freeGamesNumber == 0) {
 			baseSymbolMoney[number][symbol] += win;
@@ -562,6 +580,13 @@ public class Main {
 			}
 
 			int result = lineWin(line);
+
+			/* Mark cells used in win formation only if there is a win. */
+			for (int i = 0; result > 0 && i < line.length
+					&& line[i] != NO_SYMBOL_INDEX; i++) {
+				int index = lines[l][i];
+				winners[i][index] = true;
+			}
 
 			/* Accumulate line win. */
 			win += result;
@@ -772,7 +797,7 @@ public class Main {
 	/**
 	 * Expand wilds according Lucky & Wild rules.
 	 * 
-	 * @param view
+	 * @param original
 	 *            Screen with symbols.
 	 */
 	private static boolean luckyAndWildSubstitution(int[][] original) {
@@ -788,8 +813,7 @@ public class Main {
 		}
 
 		// TODO It should not be substituted by this way, but it will be done
-		// like this,
-		// because of the customer request.
+		// like this, because of the customer request.
 		int substituent = WILD_INDICES.iterator().next();
 
 		/* Expand wilds. */
@@ -836,6 +860,53 @@ public class Main {
 	}
 
 	/**
+	 * Expand wilds according 20 Hot Blast rules.
+	 * 
+	 * @param original
+	 *            Screen with symbols.
+	 */
+	private static boolean twentyHotBlastSubstitution(int[][] original) {
+		boolean result = false;
+
+		/* Deep copy of the view. */
+		int[][] view = new int[original.length][];
+		for (int i = 0; i < original.length; i++) {
+			view[i] = new int[original[i].length];
+			for (int j = 0; j < original[i].length; j++) {
+				view[i][j] = original[i][j];
+			}
+		}
+
+		int substituent = WILD_INDICES.iterator().next();
+
+		/* Prepare view for wins checking by expanding the wild. */
+		for (int i = 0; i < view.length; i++) {
+			for (int j = 0; j < view[i].length; j++) {
+				if (view[i][j] != substituent) {
+					continue;
+				}
+
+				for (int l = 0; l < view[i].length; l++) {
+					view[i][l] = substituent;
+				}
+
+				break;
+			}
+		}
+
+		/* Deep copy of the view with the expanded wilds. */
+		if (linesWin(view) > 0) {
+			for (int i = 0; i < view.length; i++) {
+				for (int j = 0; j < view[i].length; j++) {
+					original[i][j] = view[i][j];
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Play single free spin game.
 	 *
 	 * @author Todor Balabanov
@@ -850,6 +921,7 @@ public class Main {
 		}
 
 		/* Spin reels. */
+		clear(winners);
 		spin(freeReels);
 
 		/* Win accumulated by lines. */
@@ -895,36 +967,24 @@ public class Main {
 		}
 
 		/* Spin is working even in brute force mode. */
+		clear(winners);
 		spin(baseReels);
-		// printView(System.err);
-		// System.err.println();
+		// /*DEBUG*/ printView(System.err);
+		// /*DEBUG*/ System.err.println();
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
-			// System.err.println(Arrays.deepToString(view));
-			// printView(System.err);
-			// System.err.println();
 			boolean result = burningHotSubstitution(view);
-			// if (result == true) {
-			// System.err.println(Arrays.deepToString(view));
-			// printView(System.err);
-			// System.err.println();
-			// System.exit(0);
-			// }
 		}
 
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
-			// System.err.println(Arrays.deepToString(view));
-			// printView(System.err);
-			// System.err.println();
 			boolean result = luckyAndWildSubstitution(view);
-			// if (result == true) {
-			// System.err.println(Arrays.deepToString(view));
-			// printView(System.err);
-			// System.err.println();
-			// System.exit(0);
-			// }
+		}
+
+		/* Do 20 Hot Blast style wilds expansion. */
+		if (twentyHotBlast == true) {
+			boolean result = twentyHotBlastSubstitution(view);
 		}
 
 		/* Win accumulated by lines. */
@@ -1653,6 +1713,7 @@ public class Main {
 		}
 
 		view = new int[numberOfReels][numberOfRows];
+		winners = new boolean[numberOfReels][numberOfRows];
 	}
 
 	/**
@@ -2087,7 +2148,7 @@ public class Main {
 		if (commands.hasOption("twentyhotblast") == true) {
 			twentyHotBlast = true;
 		}
-		
+
 		/* Run brute force instead of Monte Carlo simulation. */
 		if (commands.hasOption("bruteforce") == true) {
 			bruteForce = true;
