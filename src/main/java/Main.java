@@ -95,7 +95,10 @@ public class Main {
 	/** Stips in free spins. */
 	private static int[][] freeReels = null;
 
-	/** Use reels stops in brute force combinations generation. */
+	/**
+	 * Use reels stops in brute force combinations generation and collapse
+	 * feature.
+	 */
 	private static int[] reelsStops = {};
 
 	/** Current visible symbols on the screen. */
@@ -164,7 +167,10 @@ public class Main {
 	private static long totalNumberOfFreeGameRestarts = 0L;
 
 	/** Maximum number of free games in a single start. */
-	private static int maxSingleRunFreeGames;
+	private static int maxSingleRunFreeGames = 0;
+
+	/** Maximum number of collapses in a single start. */
+	private static int maxCollapses = 0;
 
 	/** Hit rate of wins in base game. */
 	private static long baseGameHitRate = 0L;
@@ -252,8 +258,6 @@ public class Main {
 
 	/**
 	 * Data initializer.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void initialize() {
 		/* Transform symbols names to integer values. */
@@ -317,8 +321,6 @@ public class Main {
 	 *
 	 * @param reels
 	 *            Reels strips.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void nextCombination(int[] reelsStops) {
 		reelsStops[0] += 1;
@@ -355,14 +357,82 @@ public class Main {
 	}
 
 	/**
+	 * If there is a win do collapse the cells took part in the win.
+	 * 
+	 * @param view
+	 *            Screen view.
+	 * @param winners
+	 *            Cells took part in the win.
+	 * @param reels
+	 *            Reels used for the symbols replacement.
+	 * @param stops
+	 *            Positions where reels were stopped.
+	 */
+	private static void collapse(int view[][], boolean winners[][],
+			int reels[][], int stops[]) {
+		/* Clear symbols which was part of the total win. */
+		for (int i = 0; i < winners.length; i++) {
+			for (int j = 0; j < winners[i].length; j++) {
+				if (winners[i][j] == false) {
+					continue;
+				}
+
+				view[i][j] = NO_SYMBOL_INDEX;
+			}
+		}
+
+		/* Pull down symbols above the holes. */
+		for (int i = 0; i < view.length; i++) {
+			boolean done = true;
+
+			for (int j = 1; j < view[i].length; j++) {
+				/*
+				 * Swap empty symbol with the symbol above it and restart reel
+				 * checking.
+				 */
+				if (view[i][j - 1] != NO_SYMBOL_INDEX
+						&& view[i][j] == NO_SYMBOL_INDEX) {
+					view[i][j] = view[i][j - 1];
+					view[i][j - 1] = NO_SYMBOL_INDEX;
+					done = false;
+				}
+			}
+
+			/* Do the reel checking again. */
+			if (done == false) {
+				i--;
+			}
+		}
+
+		/* Fill the empty cells. */
+		for (int i = 0; i < view.length; i++) {
+			for (int j = view[i].length - 1; j >= 0; j--) {
+				/* If the cell is not empty do nothing. */
+				if (view[i][j] != NO_SYMBOL_INDEX) {
+					continue;
+				}
+
+				/* Get the symbol above the stop position. */
+				stops[i]--;
+				if (stops[i] < 0) {
+					stops[i] = reels[i].length - 1;
+				}
+
+				/* Fill the empty cell. */
+				view[i][j] = reels[i][stops[i]];
+			}
+		}
+	}
+
+	/**
 	 * Single reels spin to fill view with symbols.
 	 *
 	 * @param reels
 	 *            Reels strips.
-	 *
-	 * @author Todor Balabanov
+	 * @param stops
+	 *            Positions on which reels were stopped.
 	 */
-	private static void spin(int[][] reels) {
+	private static void spin(int[][] reels, int stops[]) {
 		/* Spin all reels. */
 		for (int i = 0; i < view.length && i < reels.length; i++) {
 			int column[] = new int[view[i].length];
@@ -371,7 +441,7 @@ public class Main {
 			if (bruteForce == true) {
 				column[0] = reelsStops[i];
 			} else {
-				column[0] = PRNG.nextInt(reels[i].length);
+				column[0] = stops[i] = PRNG.nextInt(reels[i].length);
 			}
 
 			/* Fill symbols for the particular column. */
@@ -393,8 +463,6 @@ public class Main {
 	 *            Single line.
 	 *
 	 * @return Calculated win.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static int[] wildLineWin(int[] line) {
 		/* Wild index with counter and win amount. */
@@ -437,12 +505,14 @@ public class Main {
 	 *
 	 * @param line
 	 *            Single line.
+	 * @param statistics
+	 *            Statistical information output.
+	 * @param index
+	 *            Line index from the list of the lines.
 	 *
 	 * @return Calculated win.
-	 *
-	 * @author Todor Balabanov
 	 */
-	private static int lineWin(int[] line) {
+	private static int lineWin(int line[], int statistics[][], int index) {
 		/* Scatter can not lead win combination. */
 		if (SCATTER_INDICES.contains(line[0]) == true) {
 			return 0;
@@ -522,15 +592,17 @@ public class Main {
 			win = wildWin[2];
 		}
 
-		// TODO Do it outside of the win estimation function!
-		/* Update statistics. */
-		if (win > 0 && freeGamesNumber == 0) {
-			baseSymbolMoney[number][symbol] += win;
-			baseGameSymbolsHitRate[number][symbol]++;
-		} else if (win > 0 && freeGamesNumber > 0) {
-			freeSymbolMoney[number][symbol] += win * freeGamesMultiplier;
-			freeGameSymbolsHitRate[number][symbol]++;
-		}
+		/* Collect statistics for the scatter wins. */
+		statistics[index] = new int[]{number, symbol, win};
+
+		// /* Update statistics. */
+		// if (win > 0 && freeGamesNumber == 0) {
+		// baseSymbolMoney[number][symbol] += win;
+		// baseGameSymbolsHitRate[number][symbol]++;
+		// } else if (win > 0 && freeGamesNumber > 0) {
+		// freeSymbolMoney[number][symbol] += win * freeGamesMultiplier;
+		// freeGameSymbolsHitRate[number][symbol]++;
+		// }
 
 		return (win);
 	}
@@ -542,8 +614,6 @@ public class Main {
 	 *            Size of a single line.
 	 * 
 	 * @return Single line as array with no symbols.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static int[] emptyLine(int size) {
 		int[] line = new int[size];
@@ -560,12 +630,12 @@ public class Main {
 	 *
 	 * @param view
 	 *            Symbols visible in screen view.
+	 * @param statistics
+	 *            Statistical information output.
 	 *
 	 * @return Calculated win.
-	 *
-	 * @author Todor Balabanov
 	 */
-	private static int linesWin(int[][] view) {
+	private static int linesWin(int[][] view, int statistics[][]) {
 		int win = 0;
 
 		/* Check wins in all possible lines. */
@@ -579,7 +649,7 @@ public class Main {
 				line[i] = view[i][index];
 			}
 
-			int result = lineWin(line);
+			int result = lineWin(line, statistics, l);
 
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; result > 0 && i < line.length
@@ -598,11 +668,14 @@ public class Main {
 	/**
 	 * Calculate win from scatters.
 	 *
-	 * @retur Win from scatters.
+	 * @param view
+	 *            Screen with symbols.
+	 * @param statistics
+	 *            Statistical information output.
 	 *
-	 * @author Todor Balabanov
+	 * @return Win from scatters.
 	 */
-	private static int scatterWin(int[][] view) {
+	private static int scatterWin(int[][] view, int statistics[][]) {
 		/* Create as many counters as many scatters there in the game. */
 		Map<Integer, Integer> numberOfScatters = new HashMap<Integer, Integer>();
 		for (Integer scatter : SCATTER_INDICES) {
@@ -619,6 +692,7 @@ public class Main {
 			}
 		}
 
+		int i = 0;
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
 			/* Calculate scatter win. */
@@ -636,18 +710,22 @@ public class Main {
 				continue;
 			}
 
-			/* Update statistics. */
-			if (value > 0 && freeGamesNumber == 0) {
-				baseSymbolMoney[numberOfScatters
-						.get(scatter)][scatter] += value;
-				baseGameSymbolsHitRate[numberOfScatters
-						.get(scatter)][scatter]++;
-			} else if (value > 0 && freeGamesNumber > 0) {
-				freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value
-						* freeGamesMultiplier;
-				freeGameSymbolsHitRate[numberOfScatters
-						.get(scatter)][scatter]++;
-			}
+			/* Collect statistics for the scatter wins. */
+			statistics[i++] = new int[]{numberOfScatters.get(scatter), scatter,
+					value};
+
+			// /* Update statistics. */
+			// if (value > 0 && freeGamesNumber == 0) {
+			// baseSymbolMoney[numberOfScatters
+			// .get(scatter)][scatter] += value;
+			// baseGameSymbolsHitRate[numberOfScatters
+			// .get(scatter)][scatter]++;
+			// } else if (value > 0 && freeGamesNumber > 0) {
+			// freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value
+			// * freeGamesMultiplier;
+			// freeGameSymbolsHitRate[numberOfScatters
+			// .get(scatter)][scatter]++;
+			// }
 
 			/* It is needed if there are more scatter symbols. */
 			win += value;
@@ -658,8 +736,6 @@ public class Main {
 
 	/**
 	 * Setup parameters for free spins mode.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void freeGamesSetup() {
 		if (bruteForce == true) {
@@ -761,7 +837,7 @@ public class Main {
 				 * If current symbol is wild, but there is no win no expansion
 				 * is done.
 				 */
-				if (lineWin(line) <= 0) {
+				if (lineWin(line, new int[lines.length][], l) <= 0) {
 					continue;
 				}
 
@@ -895,7 +971,7 @@ public class Main {
 		}
 
 		/* Deep copy of the view with the expanded wilds. */
-		if (linesWin(view) > 0) {
+		if (linesWin(view, new int[lines.length][]) > 0) {
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					original[i][j] = view[i][j];
@@ -907,9 +983,28 @@ public class Main {
 	}
 
 	/**
+	 * Play single collapse game.
+	 * 
+	 * @param multiplier
+	 *            Collapse round win multiplier.
+	 * @param stops
+	 *            Positions in which the reels are stopped.
+	 * 
+	 * @return Won amount.
+	 */
+	private static int singleCollapseGame(int multiplier, int stops[]) {
+		collapse(view, winners, baseReels, stops);
+
+		/* Calculate win. */
+		int win = 0;
+
+		// TODO Collect statistics.
+
+		return win;
+	}
+
+	/**
 	 * Play single free spin game.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void singleFreeGame() {
 		if (bruteForce == true) {
@@ -922,10 +1017,13 @@ public class Main {
 
 		/* Spin reels. */
 		clear(winners);
-		spin(freeReels);
+		spin(freeReels, new int[freeReels.length]);
 
 		/* Win accumulated by lines. */
-		int win = linesWin(view) + scatterWin(view);
+		int[][] linesStatistics = new int[lines.length][];
+		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][];
+		int win = linesWin(view, linesStatistics)
+				+ scatterWin(view, scatterStatistics);
 		win *= freeGamesMultiplier;
 
 		/*
@@ -957,8 +1055,6 @@ public class Main {
 
 	/**
 	 * Play single base game.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void singleBaseGame() {
 		/* In brute force mode reels stops are not random. */
@@ -968,7 +1064,8 @@ public class Main {
 
 		/* Spin is working even in brute force mode. */
 		clear(winners);
-		spin(baseReels);
+		int stops[] = new int[baseReels.length];
+		spin(baseReels, stops);
 		// /*DEBUG*/ printView(System.err);
 		// /*DEBUG*/ System.err.println();
 
@@ -988,7 +1085,10 @@ public class Main {
 		}
 
 		/* Win accumulated by lines. */
-		int win = linesWin(view) + scatterWin(view);
+		int[][] linesStatistics = new int[lines.length][];
+		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][];
+		int win = linesWin(view, linesStatistics)
+				+ scatterWin(view, scatterStatistics);
 
 		/*
 		 * Keep values for mathematical expectation and standard deviation
@@ -1013,6 +1113,22 @@ public class Main {
 			updateHistogram(baseWinsHistogram, win);
 		}
 
+		/* Run extra wins after cells collapse in 20 Hot Blast mode. */
+		int counter = 1;
+		int multiplier = 2;
+		while (twentyHotBlast == true && win > 0) {
+			win = singleCollapseGame(multiplier, stops);
+
+			/* Each collapse rise the multiplier by one. */
+			multiplier++;
+			counter++;
+		}
+
+		/* Keep track of collapses retriggering. */
+		if (counter > maxCollapses) {
+			maxCollapses = counter;
+		}
+
 		/* Check for free games. */
 		freeGamesSetup();
 
@@ -1033,8 +1149,6 @@ public class Main {
 
 	/**
 	 * Print about information.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void printAbout() {
 		System.out.println(
@@ -1083,8 +1197,6 @@ public class Main {
 
 	/**
 	 * Print all simulation input data structures.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void printDataStructures() {
 		System.out.println("Symbols:");
@@ -1277,8 +1389,6 @@ public class Main {
 
 	/**
 	 * Print simulation statistics.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void printStatistics() {
 		System.out.println("Won money:\t" + wonMoney);
@@ -1327,6 +1437,8 @@ public class Main {
 		System.out.println("Max Win in Free Game:\t" + freeMaxWin);
 		System.out.println("Max Number of Free Games in Single Run:\t"
 				+ maxSingleRunFreeGames);
+		System.out.println(
+				"Max Number of Collapses in Single Run:\t" + maxCollapses);
 		System.out.println();
 		System.out.print("Base Game Win Mean:\t");
 		/* Mean */ {
@@ -1519,8 +1631,6 @@ public class Main {
 	 *
 	 * @param out
 	 *            Print stream reference.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void printView(PrintStream out) {
 		int max = view[0].length;
@@ -1532,6 +1642,11 @@ public class Main {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
+				if (view[i][j] == NO_SYMBOL_INDEX) {
+					out.print("***\t");
+					continue;
+				}
+
 				out.print(SYMBOLS_NAMES.get(view[i][j]) + "\t");
 			}
 
@@ -1544,8 +1659,6 @@ public class Main {
 	 *
 	 * @param args
 	 *            Command line arguments list.
-	 *
-	 * @author Todor Balabanov
 	 */
 	private static void printExecuteCommand(String[] args) {
 		System.out.println("Execute command:");
