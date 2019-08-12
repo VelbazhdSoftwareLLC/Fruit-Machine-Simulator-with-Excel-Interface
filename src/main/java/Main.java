@@ -592,17 +592,11 @@ public class Main {
 			win = wildWin[2];
 		}
 
-		/* Collect statistics for the scatter wins. */
+		/*
+		 * Collect statistics for the scatter wins (symbol count, symbol index,
+		 * win).
+		 */
 		statistics[index] = new int[]{number, symbol, win};
-
-		// /* Update statistics. */
-		// if (win > 0 && freeGamesNumber == 0) {
-		// baseSymbolMoney[number][symbol] += win;
-		// baseGameSymbolsHitRate[number][symbol]++;
-		// } else if (win > 0 && freeGamesNumber > 0) {
-		// freeSymbolMoney[number][symbol] += win * freeGamesMultiplier;
-		// freeGameSymbolsHitRate[number][symbol]++;
-		// }
 
 		return (win);
 	}
@@ -692,7 +686,7 @@ public class Main {
 			}
 		}
 
-		int i = 0;
+		int k = 0;
 		int win = 0;
 		for (Integer scatter : SCATTER_INDICES) {
 			/* Calculate scatter win. */
@@ -710,22 +704,23 @@ public class Main {
 				continue;
 			}
 
-			/* Collect statistics for the scatter wins. */
-			statistics[i++] = new int[]{numberOfScatters.get(scatter), scatter,
+			/*
+			 * Collect statistics for the scatter wins (number of scatters,
+			 * scatter index, win).
+			 */
+			statistics[k++] = new int[]{numberOfScatters.get(scatter), scatter,
 					value};
 
-			// /* Update statistics. */
-			// if (value > 0 && freeGamesNumber == 0) {
-			// baseSymbolMoney[numberOfScatters
-			// .get(scatter)][scatter] += value;
-			// baseGameSymbolsHitRate[numberOfScatters
-			// .get(scatter)][scatter]++;
-			// } else if (value > 0 && freeGamesNumber > 0) {
-			// freeSymbolMoney[numberOfScatters.get(scatter)][scatter] += value
-			// * freeGamesMultiplier;
-			// freeGameSymbolsHitRate[numberOfScatters
-			// .get(scatter)][scatter]++;
-			// }
+			/* Mark cells used in win formation only if there is a win. */
+			for (int i = 0; i < view.length; i++) {
+				for (int j = 0; j < view[i].length; j++) {
+					if (view[i][j] != scatter) {
+						continue;
+					}
+
+					winners[i][j] = true;
+				}
+			}
 
 			/* It is needed if there are more scatter symbols. */
 			win += value;
@@ -837,7 +832,7 @@ public class Main {
 				 * If current symbol is wild, but there is no win no expansion
 				 * is done.
 				 */
-				if (lineWin(line, new int[lines.length][], l) <= 0) {
+				if (lineWin(line, new int[lines.length][3], l) <= 0) {
 					continue;
 				}
 
@@ -971,7 +966,7 @@ public class Main {
 		}
 
 		/* Deep copy of the view with the expanded wilds. */
-		if (linesWin(view, new int[lines.length][]) > 0) {
+		if (linesWin(view, new int[lines.length][3]) > 0) {
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					original[i][j] = view[i][j];
@@ -995,10 +990,59 @@ public class Main {
 	private static int singleCollapseGame(int multiplier, int stops[]) {
 		collapse(view, winners, baseReels, stops);
 
-		/* Calculate win. */
-		int win = 0;
+		/* Win accumulated by lines. */
+		int[][] linesStatistics = new int[lines.length][3];
+		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
+		int win = linesWin(view, linesStatistics)
+				+ scatterWin(view, scatterStatistics);
 
-		// TODO Collect statistics.
+		/* Collect statistics for the lines win. */
+		for (int statistics[] : linesStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			baseSymbolMoney[statistics[0]][statistics[1]] += multiplier
+					* statistics[2];
+			baseGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
+
+		/* Collect statistics for the scatters win. */
+		for (int statistics[] : scatterStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			baseSymbolMoney[statistics[0]][statistics[1]] += multiplier
+					* statistics[2];
+			baseGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
+
+		/* There is collapse multiplier. */
+		win *= multiplier;
+
+		/*
+		 * Keep values for mathematical expectation and standard deviation
+		 * calculation.
+		 */
+		baseOutcomes.add(win);
+
+		/* Add win to the statistics. */
+		baseMoney += win;
+		wonMoney += win;
+		if (baseMaxWin < win) {
+			baseMaxWin = win;
+		}
+
+		/* Count base game hit rate. */
+		if (win > 0) {
+			baseGameHitRate++;
+		}
+
+		/* Count in the histogram. */
+		if (win > 0) {
+			updateHistogram(baseWinsHistogram, win);
+		}
 
 		return win;
 	}
@@ -1020,11 +1064,33 @@ public class Main {
 		spin(freeReels, new int[freeReels.length]);
 
 		/* Win accumulated by lines. */
-		int[][] linesStatistics = new int[lines.length][];
-		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][];
+		int[][] linesStatistics = new int[lines.length][3];
+		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
 		win *= freeGamesMultiplier;
+
+		/* Collect statistics for the lines win. */
+		for (int statistics[] : linesStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			freeSymbolMoney[statistics[0]][statistics[1]] += statistics[2]
+					* freeGamesMultiplier;
+			freeGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
+
+		/* Collect statistics for the scatters win. */
+		for (int statistics[] : scatterStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			freeSymbolMoney[statistics[0]][statistics[1]] += statistics[2]
+					* freeGamesMultiplier;
+			freeGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
 
 		/*
 		 * Keep values for mathematical expectation and standard deviation
@@ -1071,24 +1137,44 @@ public class Main {
 
 		/* Do Burning Hot style wilds expansion. */
 		if (burningHotWilds == true) {
-			boolean result = burningHotSubstitution(view);
+			burningHotSubstitution(view);
 		}
 
 		/* Do Lucky & Wild style wilds expansion. */
 		if (luckyAndWildWilds == true) {
-			boolean result = luckyAndWildSubstitution(view);
+			luckyAndWildSubstitution(view);
 		}
 
 		/* Do 20 Hot Blast style wilds expansion. */
 		if (twentyHotBlast == true) {
-			boolean result = twentyHotBlastSubstitution(view);
+			twentyHotBlastSubstitution(view);
 		}
 
 		/* Win accumulated by lines. */
-		int[][] linesStatistics = new int[lines.length][];
-		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][];
+		int[][] linesStatistics = new int[lines.length][3];
+		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
+
+		/* Collect statistics for the lines win. */
+		for (int statistics[] : linesStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			baseSymbolMoney[statistics[0]][statistics[1]] += statistics[2];
+			baseGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
+
+		/* Collect statistics for the scatters win. */
+		for (int statistics[] : scatterStatistics) {
+			if (statistics[2] <= 0) {
+				continue;
+			}
+
+			baseSymbolMoney[statistics[0]][statistics[1]] += statistics[2];
+			baseGameSymbolsHitRate[statistics[0]][statistics[1]]++;
+		}
 
 		/*
 		 * Keep values for mathematical expectation and standard deviation
