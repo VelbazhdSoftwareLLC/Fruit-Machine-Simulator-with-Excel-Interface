@@ -202,6 +202,9 @@ public class Main {
 	/** 20 Hot Blast style of simulation flag. */
 	private static boolean twentyHotBlast = false;
 
+	/** Extra Stars style of simulation flag. */
+	private static boolean extraStars = false;
+
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
 
@@ -636,11 +639,13 @@ public class Main {
 		for (int l = 0; l < lines.length; l++) {
 			/* Initialize an empty line. */
 			int[] line = emptyLine(lines[l].length);
+			int[] reverse = emptyLine(lines[l].length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
 				int index = lines[l][i];
 				line[i] = view[i][index];
+				reverse[line.length-i-1] = view[i][index];
 			}
 
 			int result = lineWin(line, statistics, l);
@@ -654,6 +659,21 @@ public class Main {
 
 			/* Accumulate line win. */
 			win += result;
+			
+			/* Check from right to left. */
+			if(extraStars == true) {
+				result = lineWin(reverse, statistics, l);
+
+				/* Mark cells used in win formation only if there is a win. */
+				for (int i = 0; result > 0 && i < reverse.length
+						&& reverse[i] != NO_SYMBOL_INDEX; i++) {
+					int index = lines[l][line.length-i-1];
+					winners[i][index] = true;
+				}
+
+				/* Accumulate line win. */
+				win += result;
+			}
 		}
 
 		return (win);
@@ -978,6 +998,20 @@ public class Main {
 	}
 
 	/**
+	 * Expand wilds according Extra Stars rules.
+	 * 
+	 * @param original
+	 *            Screen with symbols.
+	 */
+	private static boolean extraStarsSubstitution(int[][] original) {
+		boolean result = false;
+		
+		//TODO Expand wilds.
+		
+		return result;
+	}
+
+	/**
 	 * Play single collapse game.
 	 * 
 	 * @param multiplier
@@ -1059,9 +1093,26 @@ public class Main {
 			return;
 		}
 
+		/* Keep copy of wilds. */
+		if (extraStars == true) {
+			//TODO Wilds should be kept. 
+		}
+
 		/* Spin reels. */
 		clear(winners);
 		spin(freeReels, new int[freeReels.length]);
+
+		/* Do Extra Stars style wilds expansion. */
+		if (extraStars == true) {
+			//TODO Recover wilds.
+
+			boolean expanded = extraStarsSubstitution(view);
+			
+			/* If there is  */
+			if(expanded == true) {
+				freeGamesNumber++;
+			}
+		}
 
 		/* Win accumulated by lines. */
 		int[][] linesStatistics = new int[lines.length][3];
@@ -1148,6 +1199,16 @@ public class Main {
 		/* Do 20 Hot Blast style wilds expansion. */
 		if (twentyHotBlast == true) {
 			twentyHotBlastSubstitution(view);
+		}
+
+		/* Do Extra Stars style wilds expansion. */
+		if (extraStars == true) {
+			boolean expanded = extraStarsSubstitution(view);
+			
+			/* If there is  */
+			if(expanded == true) {
+				freeGamesNumber++;
+			}
 		}
 
 		/* Win accumulated by lines. */
@@ -2206,6 +2267,8 @@ public class Main {
 				"Age of Troy rules of simulation."));
 		options.addOption(new Option("twentyhotblast", false,
 				"20 Hot Blast rules of simulation."));
+		options.addOption(new Option("extrastars", false,
+				"Extra Stars rules of simulation."));
 
 		options.addOption(
 				new Option("verbose", false, "Print intermediate results."));
@@ -2346,6 +2409,11 @@ public class Main {
 		/* Switch on 20 Hot Blast rules for the simulation. */
 		if (commands.hasOption("twentyhotblast") == true) {
 			twentyHotBlast = true;
+		}
+
+		/* Switch on Extra Stars rules for the simulation. */
+		if (commands.hasOption("extrastars") == true) {
+			extraStars = true;
 		}
 
 		/* Run brute force instead of Monte Carlo simulation. */
