@@ -645,7 +645,7 @@ public class Main {
 			for (int i = 0; i < line.length; i++) {
 				int index = lines[l][i];
 				line[i] = view[i][index];
-				reverse[line.length-i-1] = view[i][index];
+				reverse[line.length - i - 1] = view[i][index];
 			}
 
 			int result = lineWin(line, statistics, l);
@@ -659,15 +659,15 @@ public class Main {
 
 			/* Accumulate line win. */
 			win += result;
-			
+
 			/* Check from right to left. */
-			if(extraStars == true) {
+			if (extraStars == true) {
 				result = lineWin(reverse, statistics, l);
 
 				/* Mark cells used in win formation only if there is a win. */
 				for (int i = 0; result > 0 && i < reverse.length
 						&& reverse[i] != NO_SYMBOL_INDEX; i++) {
-					int index = lines[l][line.length-i-1];
+					int index = lines[l][line.length - i - 1];
 					winners[i][index] = true;
 				}
 
@@ -987,6 +987,8 @@ public class Main {
 
 		/* Deep copy of the view with the expanded wilds. */
 		if (linesWin(view, new int[lines.length][3]) > 0) {
+			result = true;
+
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					original[i][j] = view[i][j];
@@ -1000,14 +1002,38 @@ public class Main {
 	/**
 	 * Expand wilds according Extra Stars rules.
 	 * 
-	 * @param original
+	 * @param original1
 	 *            Screen with symbols.
 	 */
 	private static boolean extraStarsSubstitution(int[][] original) {
 		boolean result = false;
-		
-		//TODO Expand wilds.
-		
+
+		int substituent = WILD_INDICES.iterator().next();
+
+		/* Prepare view for wins checking by expanding the wild. */
+		for (int i = 0, j, r; i < original.length; i++) {
+			for (j = 0, r = 0; j < original[i].length; j++) {
+				if (original[i][j] == substituent) {
+					r++;
+				}
+			}
+
+			/* Do substitution only if at least one symbol is not a wild. */
+			if (r == 0) {
+				continue;
+			}
+			if (r == original[i].length) {
+				continue;
+			}
+
+			result = true;
+
+			/* Wild expansion. */
+			for (int l = 0; l < original[i].length; l++) {
+				original[i][l] = substituent;
+			}
+		}
+
 		return result;
 	}
 
@@ -1094,8 +1120,16 @@ public class Main {
 		}
 
 		/* Keep copy of wilds. */
+		int[][] old = null;
 		if (extraStars == true) {
-			//TODO Wilds should be kept. 
+			/* Deep copy of the view. */
+			old = new int[view.length][];
+			for (int i = 0; i < view.length; i++) {
+				old[i] = new int[view[i].length];
+				for (int j = 0; j < view[i].length; j++) {
+					old[i][j] = view[i][j];
+				}
+			}
 		}
 
 		/* Spin reels. */
@@ -1104,12 +1138,22 @@ public class Main {
 
 		/* Do Extra Stars style wilds expansion. */
 		if (extraStars == true) {
-			//TODO Recover wilds.
+			/* Recover wilds. */
+			for (int i = 0; i < view.length; i++) {
+				for (int j = 0; j < view[i].length; j++) {
+					if (EXTEND_WILD_INDICES.contains(old[i][j]) == false) {
+						continue;
+					}
+
+					/* Copy wild from the old screen. */
+					view[i][j] = old[i][j];
+				}
+			}
 
 			boolean expanded = extraStarsSubstitution(view);
-			
-			/* If there is  */
-			if(expanded == true) {
+
+			/* If there is expansion add extra free spin. */
+			if (expanded == true) {
 				freeGamesNumber++;
 			}
 		}
@@ -1204,9 +1248,9 @@ public class Main {
 		/* Do Extra Stars style wilds expansion. */
 		if (extraStars == true) {
 			boolean expanded = extraStarsSubstitution(view);
-			
-			/* If there is  */
-			if(expanded == true) {
+
+			/* If there is expansion add extra free spin. */
+			if (expanded == true) {
 				freeGamesNumber++;
 			}
 		}
