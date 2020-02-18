@@ -1740,6 +1740,22 @@ public class Main {
 			System.out.println();
 		}
 		System.out.println();
+		System.out.println("Base Game Symbols Wins Ratio:");
+		System.out.print("\t");
+		for (int i = 0; i < baseSymbolMoney.length; i++) {
+			System.out.print("" + i + "of\t");
+		}
+		System.out.println();
+		for (int j = 0; j < baseSymbolMoney[0].length; j++) {
+			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			for (int i = 0; i < baseSymbolMoney.length; i++) {
+				System.out.print(
+						(double) baseSymbolMoney[i][j] / (double) baseMoney
+								+ "\t");
+			}
+			System.out.println();
+		}
+		System.out.println();
 		System.out.println("Base Game Symbols Hit Rate:");
 		System.out.print("\t");
 		for (int i = 0; i < baseGameSymbolsHitRate.length; i++) {
@@ -1781,6 +1797,22 @@ public class Main {
 			for (int i = 0; i < freeSymbolMoney.length; i++) {
 				System.out.print(
 						(double) freeSymbolMoney[i][j] / (double) lostMoney
+								+ "\t");
+			}
+			System.out.println();
+		}
+		System.out.println();
+		System.out.println("Free Games Symbols Wins Ratio:");
+		System.out.print("\t");
+		for (int i = 0; i < freeSymbolMoney.length; i++) {
+			System.out.print("" + i + "of\t");
+		}
+		System.out.println();
+		for (int j = 0; j < freeSymbolMoney[0].length; j++) {
+			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			for (int i = 0; i < freeSymbolMoney.length; i++) {
+				System.out.print(
+						(double) freeSymbolMoney[i][j] / (double) freeMoney
 								+ "\t");
 			}
 			System.out.println();
