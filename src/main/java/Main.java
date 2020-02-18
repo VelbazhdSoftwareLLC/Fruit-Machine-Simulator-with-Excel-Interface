@@ -1,7 +1,7 @@
 /*==============================================================================
 *                                                                              *
 * Fruit Machine Simulator with Excel Interface version 1.0.0                   *
-* Copyrights (C) 2017-2019 Velbazhd Software LLC                               *
+* Copyrights (C) 2017-2020 Velbazhd Software LLC                               *
 *                                                                              *
 * developed by Todor Balabanov ( todor.balabanov@gmail.com )                   *
 * Sofia, Bulgaria                                                              *
@@ -1347,7 +1347,7 @@ public class Main {
 		System.out.println(
 				"* Fruit Machine Simulator with Excel Interface version 0.0.1                  *");
 		System.out.println(
-				"* Copyrights (C) 2017-2019 Velbazhd Software LLC                              *");
+				"* Copyrights (C) 2017-2020 Velbazhd Software LLC                              *");
 		System.out.println(
 				"*                                                                             *");
 		System.out.println(
