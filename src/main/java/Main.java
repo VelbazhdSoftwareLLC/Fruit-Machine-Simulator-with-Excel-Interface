@@ -2125,6 +2125,70 @@ public class Main {
 	}
 
 	/**
+	 * Shuffle loaded reals by keeping group of symbols.
+	 * 
+	 * @param strips
+	 *            Symbol names as array.
+	 * 
+	 * @param strips
+	 */
+	private static void shuffleByGroups(String[][] strips, int repeats) {
+		/* Handle each reel by itself. */
+		for (int reel = 0; reel < strips.length; reel++) {
+			List<List<String>> groups = new ArrayList<List<String>>();
+
+			/* Empty strip can not be shuffled. */
+			if (strips[reel].length <= 0) {
+				continue;
+			}
+
+			/* Do shuffling. */ {
+				String current = strips[reel][0];
+				List<String> group = new ArrayList<String>();
+
+				/* Form groups. */
+				for (String symbol : strips[reel]) {
+					if (current.equals(symbol) == false) {
+						groups.add(group);
+						group = new ArrayList<String>();
+						current = symbol;
+					}
+
+					group.add(symbol);
+				}
+				groups.add(group);
+
+				/*
+				 * Shuffle groups by checking first and last symbol for
+				 * identity.
+				 */
+				int counter = 0;
+				do {
+					counter = 0;
+					Collections.shuffle(groups);
+
+					for (int i = 0; i < groups.size(); i++) {
+						if (groups.get(i).get(0).equals(groups
+								.get((i + 1) % groups.size()).get(0)) == true) {
+							counter++;
+						}
+					}
+				} while (counter > repeats);
+			}
+
+			/* Store shuffled strip. */
+			for (int i = 0; i < strips[reel].length;) {
+				for (List<String> group : groups) {
+					for (String symbol : group) {
+						strips[reel][i] = symbol;
+						i++;
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Shuffle loaded reals in stack of symbols.
 	 * 
 	 * @param strips
@@ -2136,8 +2200,18 @@ public class Main {
 	 *            Number of allowed repeats in neighboring stacks.
 	 */
 	private static void shuffle(String[][] strips, int stackSize, int repeats) {
-		/* Stack of symbols can not be negative or zero. */
-		if (stackSize < 1) {
+		/*
+		 * Stack of symbols can not be zero, but if it is zero group by sorting
+		 * is done.
+		 */
+		if (stackSize == 0) {
+			shuffleByGroups(strips, repeats);
+
+			return;
+		}
+
+		/* Stack of symbols can not be negative. */
+		if (stackSize < 0) {
 			stackSize = 1;
 		}
 
@@ -2321,7 +2395,7 @@ public class Main {
 				.build());
 		options.addOption(Option.builder("shuffle").argName("number").hasArg()
 				.valueSeparator()
-				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking).")
+				.desc("Shuffle loaded reels with symbols stacked by number (default 1 - no stacking), when it is 0 shuffling is done by groups.")
 				.build());
 		options.addOption(Option.builder("repeats").argName("number").hasArg()
 				.valueSeparator()
