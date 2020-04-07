@@ -19,7 +19,7 @@ dependencies {
 
 task jarAll(type: Jar) {
     manifest {
-        attributes 'Main-Class': 'Main'
+        attributes 'Main-Class': 'eu.veldsoft.slot.simulator.Main'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
