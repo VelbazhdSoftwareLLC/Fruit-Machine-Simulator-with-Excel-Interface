@@ -1,5 +1,20 @@
+plugins {
+  id 'application'
+  id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
+  
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+javafx {
+    version = "14"
+    modules = [ 'javafx.controls' ]
+}
 
 repositories {
     jcenter()

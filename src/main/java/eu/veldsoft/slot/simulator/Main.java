@@ -23,6 +23,7 @@
 
 package eu.veldsoft.slot.simulator;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,15 +46,30 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.poi.xssf.usermodel.XSSFPictureData;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 
 /**
  * Application single entry point class.
  * 
  * @author Todor Balabanov
  */
-public class Main {
+public class Main extends Application {
 
 	/** Pseudo-random number generator. */
 	private static final RandomGenerator PRNG = new MersenneTwister();
@@ -75,6 +91,9 @@ public class Main {
 
 	/** List of symbols names. */
 	private static final List<Integer> SYMBOLS_NUMBERS = new ArrayList<Integer>();
+
+	/** List of symbols images. */
+	private static final List<Image> SYMBOLS_IMAGES = new ArrayList<Image>();
 
 	/** Slot game pay table. */
 	private static int[][] paytable = {};
@@ -179,6 +198,12 @@ public class Main {
 
 	/** Hit rate of wins in free spins. */
 	private static long freeGamesHitRate = 0L;
+
+	/** Visualization mode flag. */
+	private static boolean visualizationMode = false;
+
+	/** Simulation mode flag. */
+	private static boolean simulationMode = false;
 
 	/** Verbose output flag. */
 	private static boolean verboseOutput = false;
@@ -1966,6 +1991,12 @@ public class Main {
 			}
 		}
 
+		/* Read all symbols images. */
+		for (XSSFPictureData picture : workbook.getAllPictures()) {
+			SYMBOLS_IMAGES.add(
+					new Image(new ByteArrayInputStream(picture.getData())));
+		}
+
 		/* Load pay table. */
 		sheet = workbook.getSheet("Paytable");
 		paytable = new int[numberOfReels + 1][numberOfSymbols];
@@ -2340,6 +2371,51 @@ public class Main {
 		System.err.println();
 	}
 
+	private static void simulate(long numberOfSimulations,
+			long progressPrintOnIteration) {
+		/* Simulation main loop. */
+		for (long g = 0L; g < numberOfSimulations; g++) {
+			if (verboseOutput == true && g == 0) {
+				System.out.println("Games\tRTP\tRTP(Base)\tRTP(Free)");
+			}
+
+			/* Print progress report. */
+			if (verboseOutput == true && g % progressPrintOnIteration == 0) {
+				try {
+					System.out.print(g + " of " + numberOfSimulations);
+					System.out.print("\t");
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) wonMoney / (double) lostMoney)));
+					System.out.print("\t");
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) baseMoney / (double) lostMoney)));
+					System.out.print("\t");
+					System.out.print(String.format("  %6.2f",
+							100D * ((double) freeMoney / (double) lostMoney)));
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+				System.out.println();
+			}
+
+			totalNumberOfGames++;
+
+			lostMoney += totalBet;
+
+			singleBaseGame();
+		}
+
+		System.out.println(
+				"********************************************************************************");
+		printStatistics();
+		System.out.println(
+				"********************************************************************************");
+	}
+
+	private static void visualize(String[] args) {
+		Application.launch(args);
+	}
+
 	/**
 	 * Application single entry point method.
 	 * 
@@ -2362,7 +2438,10 @@ public class Main {
 
 		/* Handling command line arguments with library. */
 		Options options = new Options();
-		options.addOption(new Option("h", "help", false, "Help screen."));
+
+		options.addOption(new Option("help", false, "Help screen."));
+
+		options.addOption(new Option("gui", false, "Run GUI visualization."));
 
 		options.addOption(Option.builder("input").argName("file").hasArg()
 				.valueSeparator().desc("Input Excel file name.").build());
@@ -2438,6 +2517,15 @@ public class Main {
 			(new HelpFormatter()).printHelp("java Main", options, true);
 			System.out.println();
 			System.exit(0);
+		}
+
+		/* Setup visualization mode. */
+		if (commands.hasOption("gui") == true) {
+			visualizationMode = true;
+			simulationMode = false;
+		} else {
+			visualizationMode = false;
+			simulationMode = true;
 		}
 
 		/* Read input file name. */
@@ -2610,42 +2698,68 @@ public class Main {
 			numberOfSimulations = baseGameNumberOfCombinations();
 		}
 
-		/* Simulation main loop. */
-		for (long g = 0L; g < numberOfSimulations; g++) {
-			if (verboseOutput == true && g == 0) {
-				System.out.println("Games\tRTP\tRTP(Base)\tRTP(Free)");
-			}
-
-			/* Print progress report. */
-			if (verboseOutput == true && g % progressPrintOnIteration == 0) {
-				try {
-					System.out.print(g + " of " + numberOfSimulations);
-					System.out.print("\t");
-					System.out.print(String.format("  %6.2f",
-							100D * ((double) wonMoney / (double) lostMoney)));
-					System.out.print("\t");
-					System.out.print(String.format("  %6.2f",
-							100D * ((double) baseMoney / (double) lostMoney)));
-					System.out.print("\t");
-					System.out.print(String.format("  %6.2f",
-							100D * ((double) freeMoney / (double) lostMoney)));
-				} catch (Exception e) {
-					System.err.println(e);
-				}
-				System.out.println();
-			}
-
-			totalNumberOfGames++;
-
-			lostMoney += totalBet;
-
-			singleBaseGame();
+		if (simulationMode == true) {
+			simulate(numberOfSimulations, progressPrintOnIteration);
 		}
 
-		System.out.println(
-				"********************************************************************************");
-		printStatistics();
-		System.out.println(
-				"********************************************************************************");
+		if (visualizationMode == true) {
+			visualize(args);
+		}
+	}
+
+	private static ImageView symbolsViews[][] = null;
+
+	private static TextField totalBetView = new TextField();
+
+	private static TextField totalWinView = new TextField();
+
+	@Override
+	public void start(Stage stage) throws Exception {
+		GridPane grid = new GridPane();
+
+		symbolsViews = new ImageView[view.length][];
+		for (int i = 0, k = 0; i < view.length; i++) {
+			symbolsViews[i] = new ImageView[view[i].length];
+			for (int j = 0; j < view[i].length; j++, k++) {
+				symbolsViews[i][j] = new ImageView();
+				grid.add(symbolsViews[i][j], i, j);
+				symbolsViews[i][j].setImage(
+						SYMBOLS_IMAGES.get(k % SYMBOLS_IMAGES.size()));
+			}
+		}
+
+		Button spin = new Button("SPIN");
+		spin.setOnAction(value -> {
+			singleBaseGame();
+
+			totalBetView.setText("" + totalBet);
+
+			totalWinView
+					.setText("" + baseOutcomes.get(baseOutcomes.size() - 1));
+
+			for (int i = 0; i < view.length; i++) {
+				for (int j = 0; j < view[i].length; j++) {
+					if (view[i][j] == NO_SYMBOL_INDEX) {
+						continue;
+					}
+
+					symbolsViews[i][j].setImage(SYMBOLS_IMAGES.get(view[i][j]));
+				}
+			}
+		});
+
+		totalBetView.setEditable(false);
+		totalWinView.setEditable(false);
+
+		VBox vbox = new VBox(grid,
+				new BorderPane(null, null,
+						new HBox(new Label("Total Bet:"), totalBetView,
+								new Label("Total Win:"), totalWinView, spin),
+						null, null));
+
+		stage.setScene(new Scene(vbox));
+		stage.setTitle(
+				"Fruit Machine Simulator with Excel Interface version 1.0.0 Copyrights (C) 2017-2020 Velbazhd Software LLC");
+		stage.show();
 	}
 }
