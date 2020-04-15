@@ -23,6 +23,7 @@
 
 package eu.veldsoft.slot.simulator;
 
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +61,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -101,6 +103,9 @@ public class Main extends Application {
 	/** Lines combinations. */
 	private static int[][] lines = {};
 
+	/** List of lines colors. */
+	private static final List<Color> LINES_COLORS = new ArrayList<Color>();
+
 	/** Target RTP percent. */
 	private static double targetRtp = 0;
 
@@ -127,6 +132,9 @@ public class Main extends Application {
 
 	/** Cells on the screen which took part of the wins. */
 	private static boolean[][] winners = {};
+
+	/** Lines on the screen which took part of the wins. */
+	private static boolean[] winnerLines = {};
 
 	/** Current free spins multiplier. */
 	private static int freeGamesMultiplier = 0;
@@ -373,16 +381,20 @@ public class Main extends Application {
 	}
 
 	/**
-	 * Clear flags for the cells used in wins formation.
+	 * Clear supporting structures.
 	 * 
 	 * @param winners
 	 *            Flags of the cells.
 	 */
-	private static void clear(boolean winners[][]) {
+	private static void clear() {
 		for (int i = 0; i < winners.length; i++) {
 			for (int j = 0; j < winners[i].length; j++) {
 				winners[i][j] = false;
 			}
+		}
+
+		for (int i = 0; i < winnerLines.length; i++) {
+			winnerLines[i] = false;
 		}
 	}
 
@@ -682,6 +694,7 @@ public class Main extends Application {
 					&& line[i] != NO_SYMBOL_INDEX; i++) {
 				int index = lines[l][i];
 				winners[i][index] = true;
+				winnerLines[l] = true;
 			}
 
 			/* Accumulate line win. */
@@ -696,6 +709,7 @@ public class Main extends Application {
 						&& reverse[i] != NO_SYMBOL_INDEX; i++) {
 					int index = lines[l][line.length - i - 1];
 					winners[i][index] = true;
+					winnerLines[l] = true;
 				}
 
 				/* Accumulate line win. */
@@ -1160,7 +1174,7 @@ public class Main extends Application {
 		}
 
 		/* Spin reels. */
-		clear(winners);
+		clear();
 		spin(freeReels, new int[freeReels.length]);
 
 		/* Do Extra Stars style wilds expansion. */
@@ -1251,7 +1265,7 @@ public class Main extends Application {
 		}
 
 		/* Spin is working even in brute force mode. */
-		clear(winners);
+		clear();
 		int stops[] = new int[baseReels.length];
 		spin(baseReels, stops);
 		// /*DEBUG*/ printView(System.err);
@@ -2009,8 +2023,16 @@ public class Main extends Application {
 
 		/* Load lines. */
 		sheet = workbook.getSheet("Lines");
+		winnerLines = new boolean[numberOfLines];
 		lines = new int[numberOfLines][numberOfReels];
 		for (int l = 0; l < numberOfLines; l++) {
+			/* Load line color. */
+			byte[] rgb = sheet.getRow(l * (numberOfRows + 1)).getCell(0)
+					.getCellStyle().getFillBackgroundXSSFColor().getRGB();
+			LINES_COLORS.add(
+					new Color(rgb[0] & 0xFF, rgb[1] & 0xFF, rgb[2] & 0xFF));
+
+			/* Load line mask. */
 			for (int r = 0; r < numberOfRows; r++) {
 				for (int c = 0; c < numberOfReels; c++) {
 					if (sheet.getRow(l * (numberOfRows + 1) + r).getCell(c)
@@ -2707,6 +2729,8 @@ public class Main extends Application {
 		}
 	}
 
+	private static HBox symbolsBorders[][] = null;
+
 	private static ImageView symbolsViews[][] = null;
 
 	private static TextField totalBetView = new TextField();
@@ -2717,12 +2741,20 @@ public class Main extends Application {
 	public void start(Stage stage) throws Exception {
 		GridPane grid = new GridPane();
 
+		symbolsBorders = new HBox[view.length][];
 		symbolsViews = new ImageView[view.length][];
 		for (int i = 0, k = 0; i < view.length; i++) {
+			symbolsBorders[i] = new HBox[view[i].length];
 			symbolsViews[i] = new ImageView[view[i].length];
 			for (int j = 0; j < view[i].length; j++, k++) {
 				symbolsViews[i][j] = new ImageView();
-				grid.add(symbolsViews[i][j], i, j);
+				symbolsBorders[i][j] = new HBox(symbolsViews[i][j]);
+
+				symbolsBorders[i][j].setStyle(
+						"-fx-border-color: black; -fx-border-width: 5;");
+
+				grid.add(symbolsBorders[i][j], i, j);
+
 				symbolsViews[i][j].setImage(
 						SYMBOLS_IMAGES.get(k % SYMBOLS_IMAGES.size()));
 			}
@@ -2736,6 +2768,50 @@ public class Main extends Application {
 
 			totalWinView
 					.setText("" + baseOutcomes.get(baseOutcomes.size() - 1));
+
+			for (int i = 0; i < winners.length; i++) {
+				for (int j = 0; j < winners[i].length; j++) {
+					symbolsBorders[i][j].setStyle(
+							"-fx-border-color: black; -fx-border-width: 5;");
+
+					if (winners[i][j] == false) {
+						continue;
+					}
+
+					int red = 0;
+					int green = 0;
+					int blue = 0;
+					double counter = 0;
+					for (int l = 0; l < lines.length; l++) {
+						if (winnerLines[l] == true) {
+							/* It is a line win. */
+							// red += LINES_COLORS.get(l).getRed();
+							// green += LINES_COLORS.get(l).getGreen();
+							// blue += LINES_COLORS.get(l).getBlue();
+							// counter++;
+							
+							red = 255;
+							green = 255;
+							blue = 255;
+						} else {
+							/* It is a scatter win. */
+							red = 255;
+							green = 255;
+							blue = 255;
+						}
+					}
+
+					if (counter > 0) {
+						red = (int) (red / counter);
+						green = (int) (green / counter);
+						blue = (int) (blue / counter);
+					}
+
+					symbolsBorders[i][j].setStyle("-fx-border-color: #"
+							+ String.format("%02X%02X%02X", red, green, blue)
+							+ "; -fx-border-width: 5;");
+				}
+			}
 
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
