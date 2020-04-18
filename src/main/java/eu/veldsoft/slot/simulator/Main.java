@@ -37,6 +37,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -401,15 +403,12 @@ public class Main extends Application {
 	 * 
 	 * @param view
 	 *            Screen view.
-	 * @param winners
-	 *            Cells took part in the win.
 	 * @param reels
 	 *            Reels used for the symbols replacement.
 	 * @param stops
 	 *            Positions where reels were stopped.
 	 */
-	private static void collapse(int view[][], boolean winners[][],
-			int reels[][], int stops[]) {
+	private static void collapse(int view[][], int reels[][], int stops[]) {
 		/* Clear symbols which was part of the total win. */
 		for (int i = 0; i < winners.length; i++) {
 			for (int j = 0; j < winners[i].length; j++) {
@@ -1087,7 +1086,7 @@ public class Main extends Application {
 	 * @return Won amount.
 	 */
 	private static int singleCollapseGame(int multiplier, int stops[]) {
-		collapse(view, winners, baseReels, stops);
+		collapse(view, baseReels, stops);
 
 		/* Win accumulated by lines. */
 		int[][] linesStatistics = new int[lines.length][3];
@@ -2767,50 +2766,6 @@ public class Main extends Application {
 			totalWinView
 					.setText("" + baseOutcomes.get(baseOutcomes.size() - 1));
 
-			for (int i = 0; i < winners.length; i++) {
-				for (int j = 0; j < winners[i].length; j++) {
-					symbolsBorders[i][j].setStyle(
-							"-fx-border-color: black; -fx-border-width: 5;");
-
-					if (winners[i][j] == false) {
-						continue;
-					}
-
-					int red = 0;
-					int green = 0;
-					int blue = 0;
-					double counter = 0;
-					for (int l = 0; l < lines.length; l++) {
-						if (winnerLines[l] == true) {
-							/* It is a line win. */
-							// red += LINES_COLORS.get(l).getRed();
-							// green += LINES_COLORS.get(l).getGreen();
-							// blue += LINES_COLORS.get(l).getBlue();
-							// counter++;
-
-							red = 255;
-							green = 255;
-							blue = 255;
-						} else {
-							/* It is a scatter win. */
-							red = 255;
-							green = 255;
-							blue = 255;
-						}
-					}
-
-					if (counter > 0) {
-						red = (int) (red / counter);
-						green = (int) (green / counter);
-						blue = (int) (blue / counter);
-					}
-
-					symbolsBorders[i][j].setStyle("-fx-border-color: #"
-							+ String.format("%02X%02X%02X", red, green, blue)
-							+ "; -fx-border-width: 5;");
-				}
-			}
-
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					if (view[i][j] == NO_SYMBOL_INDEX) {
@@ -2835,5 +2790,77 @@ public class Main extends Application {
 		stage.setTitle(
 				"Fruit Machine Simulator with Excel Interface version 1.0.0 Copyrights (C) 2017-2020 Velbazhd Software LLC");
 		stage.show();
+
+		/* Loop over winning lines. */
+		(new Timer(true)).scheduleAtFixedRate(new TimerTask() {
+			private void showLine(int numberOfWinningLines) {
+				int show = -1;
+				int current = (int) ((System.currentTimeMillis() / 1000)
+						% numberOfWinningLines);
+				for (int l = 0, stop = -1; l < lines.length; l++) {
+					/* If it is not a winning line do nothing. */
+					if (winnerLines[l] == false) {
+						continue;
+					}
+
+					/* Increment winning lines counter. */
+					stop++;
+
+					if (current == stop) {
+						show = l;
+						break;
+					}
+				}
+
+				int red = LINES_COLORS.get(show).getRed();
+				int green = LINES_COLORS.get(show).getGreen();
+				int blue = LINES_COLORS.get(show).getBlue();
+				for (int i = 0; i < winners.length; i++) {
+					int j = lines[show][i];
+					symbolsBorders[i][j].setStyle("-fx-border-color: #"
+							+ String.format("%02X%02X%02X", red, green, blue)
+							+ "; -fx-border-width: 5;");
+				}
+			}
+
+			@Override
+			public void run() {
+				for (int i = 0; i < winners.length; i++) {
+					for (int j = 0; j < winners[i].length; j++) {
+						symbolsBorders[i][j].setStyle(
+								"-fx-border-color: black; -fx-border-width: 5;");
+					}
+				}
+
+				/* Count the number of winning lines. */
+				int counter = 0;
+				for (int l = 0; l < lines.length; l++) {
+					if (winnerLines[l] == true) {
+						counter++;
+					}
+				}
+
+				/* Show one of winning lines. */
+				if (counter > 0) {
+					showLine(counter);
+				}
+
+				/* Show scatter win. */
+				for (int i = 0; i < winners.length; i++) {
+					for (int j = 0; j < winners[i].length; j++) {
+						if (winners[i][j] == false) {
+							continue;
+						}
+
+						if (SCATTER_INDICES.contains(view[i][j]) == false) {
+							continue;
+						}
+
+						symbolsBorders[i][j].setStyle(
+								"-fx-border-color: white; -fx-border-width: 5;");
+					}
+				}
+			}
+		}, 1000l, 1000l);
 	}
 }
