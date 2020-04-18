@@ -2766,6 +2766,13 @@ public class Main extends Application {
 			totalWinView
 					.setText("" + baseOutcomes.get(baseOutcomes.size() - 1));
 
+			for (int i = 0; i < symbolsBorders.length; i++) {
+				for (int j = 0; j < symbolsBorders[i].length; j++) {
+					symbolsBorders[i][j].setStyle(
+							"-fx-border-color: black; -fx-border-width: 5;");
+				}
+			}
+
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					if (view[i][j] == NO_SYMBOL_INDEX) {
@@ -2825,8 +2832,8 @@ public class Main extends Application {
 
 			@Override
 			public void run() {
-				for (int i = 0; i < winners.length; i++) {
-					for (int j = 0; j < winners[i].length; j++) {
+				for (int i = 0; i < symbolsBorders.length; i++) {
+					for (int j = 0; j < symbolsBorders[i].length; j++) {
 						symbolsBorders[i][j].setStyle(
 								"-fx-border-color: black; -fx-border-width: 5;");
 					}
