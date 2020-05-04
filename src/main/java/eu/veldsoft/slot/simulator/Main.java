@@ -128,6 +128,9 @@ public class Main extends Application {
 	/** If scatter win is presented on the screen. */
 	private static int scatterMultiplier = 0;
 
+	/** Balance of the game. */
+	private static int credit = 0;
+
 	/** Total bet in single base game spin. */
 	private static int singleLineBet = 0;
 
@@ -2742,6 +2745,8 @@ public class Main extends Application {
 
 	private static ImageView symbolsViews[][] = null;
 
+	private static TextField creditView = new TextField();
+
 	private static TextField totalBetView = new TextField();
 
 	private static TextField totalWinView = new TextField();
@@ -2773,6 +2778,8 @@ public class Main extends Application {
 		spin.setOnAction(value -> {
 			singleBaseGame();
 
+			creditView.setText("" + credit);
+
 			totalBetView.setText("" + totalBet);
 
 			totalWinView
@@ -2801,12 +2808,14 @@ public class Main extends Application {
 			}
 		});
 
+		creditView.setEditable(false);
 		totalBetView.setEditable(false);
 		totalWinView.setEditable(false);
 
 		VBox vbox = new VBox(grid,
 				new BorderPane(null, null,
-						new HBox(new Label("Total Bet:"), totalBetView,
+						new HBox(new Label("Credit:"), creditView,
+								new Label("Total Bet:"), totalBetView,
 								new Label("Total Win:"), totalWinView, spin),
 						null, null));
 
