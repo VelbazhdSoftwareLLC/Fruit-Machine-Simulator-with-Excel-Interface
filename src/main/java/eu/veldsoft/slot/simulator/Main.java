@@ -47,8 +47,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.poi.xssf.usermodel.XSSFPictureData;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -73,12 +71,6 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-	/** Pseudo-random number generator. */
-	private static final RandomGenerator PRNG = new MersenneTwister();
-
-	/** Index of the none symbol in the array of symbols. */
-	private static final int NO_SYMBOL_INDEX = -1;
-
 	/** Index of the scatter symbol in the array of symbols. */
 	private static final Set<Integer> SCATTER_INDICES = new HashSet<Integer>();
 
@@ -89,13 +81,7 @@ public class Main extends Application {
 	private static final Set<Integer> EXTEND_WILD_INDICES = new HashSet<Integer>();
 
 	/** List of symbols names. */
-	private static final List<String> SYMBOLS_NAMES = new ArrayList<String>();
-
-	/** List of symbols names. */
-	private static final List<Integer> SYMBOLS_NUMBERS = new ArrayList<Integer>();
-
-	/** List of symbols images. */
-	private static final List<Image> SYMBOLS_IMAGES = new ArrayList<Image>();
+	private static final List<Symbol> SYMBOLS = new ArrayList<Symbol>();
 
 	/** Slot game pay table. */
 	private static int[][] paytable = {};
@@ -303,8 +289,8 @@ public class Main extends Application {
 		for (int i = 0; i < baseStrips.length; i++) {
 			baseReels[i] = new int[baseStrips[i].length];
 			for (int j = 0; j < baseStrips[i].length; j++) {
-				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
-					if (SYMBOLS_NAMES.get(s).trim()
+				for (int s = 0; s < SYMBOLS.size(); s++) {
+					if (SYMBOLS.get(s).name.trim()
 							.equals(baseStrips[i][j].trim()) == true) {
 						baseReels[i][j] = s;
 						break;
@@ -318,8 +304,8 @@ public class Main extends Application {
 		for (int i = 0; i < freeStrips.length; i++) {
 			freeReels[i] = new int[freeStrips[i].length];
 			for (int j = 0; j < freeStrips[i].length; j++) {
-				for (int s = 0; s < SYMBOLS_NAMES.size(); s++) {
-					if (SYMBOLS_NAMES.get(s).trim()
+				for (int s = 0; s < SYMBOLS.size(); s++) {
+					if (SYMBOLS.get(s).name.trim()
 							.equals(freeStrips[i][j].trim()) == true) {
 						freeReels[i][j] = s;
 						break;
@@ -331,7 +317,7 @@ public class Main extends Application {
 		/* Initialize view with no symbols. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = NO_SYMBOL_INDEX;
+				view[i][j] = Util.NO_SYMBOL_INDEX;
 			}
 		}
 
@@ -342,12 +328,10 @@ public class Main extends Application {
 		totalBet = singleLineBet * lines.length;
 
 		/* Allocate memory for the counters. */
-		baseSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
-		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES
-				.size()];
-		freeSymbolMoney = new long[paytable.length][SYMBOLS_NAMES.size()];
-		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS_NAMES
-				.size()];
+		baseSymbolMoney = new long[paytable.length][SYMBOLS.size()];
+		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS.size()];
+		freeSymbolMoney = new long[paytable.length][SYMBOLS.size()];
+		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS.size()];
 		// TODO Counters should be initialized with zeros.
 
 		baseOutcomes.clear();
@@ -416,7 +400,7 @@ public class Main extends Application {
 					continue;
 				}
 
-				view[i][j] = NO_SYMBOL_INDEX;
+				view[i][j] = Util.NO_SYMBOL_INDEX;
 			}
 		}
 
@@ -429,10 +413,10 @@ public class Main extends Application {
 				 * Swap empty symbol with the symbol above it and restart reel
 				 * checking.
 				 */
-				if (view[i][j - 1] != NO_SYMBOL_INDEX
-						&& view[i][j] == NO_SYMBOL_INDEX) {
+				if (view[i][j - 1] != Util.NO_SYMBOL_INDEX
+						&& view[i][j] == Util.NO_SYMBOL_INDEX) {
 					view[i][j] = view[i][j - 1];
-					view[i][j - 1] = NO_SYMBOL_INDEX;
+					view[i][j - 1] = Util.NO_SYMBOL_INDEX;
 					done = false;
 				}
 			}
@@ -447,7 +431,7 @@ public class Main extends Application {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = view[i].length - 1; j >= 0; j--) {
 				/* If the cell is not empty do nothing. */
-				if (view[i][j] != NO_SYMBOL_INDEX) {
+				if (view[i][j] != Util.NO_SYMBOL_INDEX) {
 					continue;
 				}
 
@@ -480,7 +464,7 @@ public class Main extends Application {
 			if (bruteForce == true) {
 				column[0] = reelsStops[i];
 			} else {
-				column[0] = stops[i] = PRNG.nextInt(reels[i].length);
+				column[0] = stops[i] = Util.PRNG.nextInt(reels[i].length);
 			}
 
 			/* Fill symbols for the particular column. */
@@ -512,7 +496,7 @@ public class Main extends Application {
 
 		/* If there is no leading wild there is no wild win. */
 		if (WILD_INDICES.contains(line[0]) == false) {
-			return (new int[]{NO_SYMBOL_INDEX, 0, 0});
+			return (new int[]{Util.NO_SYMBOL_INDEX, 0, 0});
 		}
 
 		/* Each wild can lead to different level of win. */
@@ -565,7 +549,7 @@ public class Main extends Application {
 
 		/* Wild symbol passing to find first regular symbol. */
 		for (int i = 0; i < line.length; i++) {
-			if (line[i] == NO_SYMBOL_INDEX) {
+			if (line[i] == Util.NO_SYMBOL_INDEX) {
 				break;
 			}
 
@@ -618,7 +602,7 @@ public class Main extends Application {
 
 		/* Clear unused symbols. */
 		for (int i = number; i < line.length; i++) {
-			line[i] = NO_SYMBOL_INDEX;
+			line[i] = Util.NO_SYMBOL_INDEX;
 		}
 
 		/* Calculate single line win. */
@@ -652,7 +636,7 @@ public class Main extends Application {
 		int[] line = new int[size];
 
 		for (int i = 0; i < line.length; i++) {
-			line[i] = NO_SYMBOL_INDEX;
+			line[i] = Util.NO_SYMBOL_INDEX;
 		}
 
 		return line;
@@ -688,7 +672,7 @@ public class Main extends Application {
 
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; result > 0 && i < line.length
-					&& line[i] != NO_SYMBOL_INDEX; i++) {
+					&& line[i] != Util.NO_SYMBOL_INDEX; i++) {
 				int index = lines[l][i];
 				winners[i][index] = true;
 				winnerLines[l] = true;
@@ -703,7 +687,7 @@ public class Main extends Application {
 
 				/* Mark cells used in win formation only if there is a win. */
 				for (int i = 0; result > 0 && i < reverse.length
-						&& reverse[i] != NO_SYMBOL_INDEX; i++) {
+						&& reverse[i] != Util.NO_SYMBOL_INDEX; i++) {
 					int index = lines[l][line.length - i - 1];
 					winners[i][index] = true;
 					winnerLines[l] = true;
@@ -1429,18 +1413,17 @@ public class Main extends Application {
 	 */
 	private static void printDataStructures() {
 		System.out.println("Symbols:");
-		int size = Math.min(SYMBOLS_NAMES.size(), SYMBOLS_NUMBERS.size());
 		System.out.println("Name\tIndex\tType");
-		for (int i = 0; i < size; i++) {
-			System.out.print(SYMBOLS_NAMES.get(i) + "\t");
-			System.out.print(SYMBOLS_NUMBERS.get(i) + "\t");
+		for (int i = 0; i < SYMBOLS.size(); i++) {
+			System.out.print(SYMBOLS.get(i).name + "\t");
+			System.out.print(SYMBOLS.get(i).index + "\t");
 
-			if (SCATTER_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+			if (SCATTER_INDICES.contains(SYMBOLS.get(i).index) == true) {
 				System.out.print("Scatter");
 			} else if (EXTEND_WILD_INDICES
-					.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+					.contains(SYMBOLS.get(i).index) == true) {
 				System.out.print("Extended");
-			} else if (WILD_INDICES.contains(SYMBOLS_NUMBERS.get(i)) == true) {
+			} else if (WILD_INDICES.contains(SYMBOLS.get(i).index) == true) {
 				System.out.print("Wild");
 			} else {
 				System.out.print("Regular");
@@ -1456,7 +1439,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < paytable[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < paytable.length; i++) {
 				System.out.print(paytable[i][j] + "\t");
 			}
@@ -1492,14 +1475,14 @@ public class Main extends Application {
 			for (int j = 0; baseReels != null && j < max; j++) {
 				for (int i = 0; i < baseReels.length; i++) {
 					if (j < baseReels[i].length) {
-						System.out.print(SYMBOLS_NAMES.get(baseReels[i][j]));
+						System.out.print(SYMBOLS.get(baseReels[i][j]).name);
 					}
 					System.out.print("\t");
 				}
 				System.out.print("\t");
 				for (int i = 0; i < baseReels.length; i++) {
 					if (j < baseReels[i].length) {
-						System.out.print(SYMBOLS_NUMBERS.get(baseReels[i][j]));
+						System.out.print(SYMBOLS.get(baseReels[i][j]).index);
 					}
 					System.out.print("\t");
 				}
@@ -1519,14 +1502,14 @@ public class Main extends Application {
 			for (int j = 0; freeReels != null && j < max; j++) {
 				for (int i = 0; i < freeReels.length; i++) {
 					if (j < freeReels[i].length) {
-						System.out.print(SYMBOLS_NAMES.get(freeReels[i][j]));
+						System.out.print(SYMBOLS.get(freeReels[i][j]).name);
 					}
 					System.out.print("\t");
 				}
 				System.out.print("\t");
 				for (int i = 0; i < freeReels.length; i++) {
 					if (j < freeReels[i].length) {
-						System.out.print(SYMBOLS_NUMBERS.get(freeReels[i][j]));
+						System.out.print(SYMBOLS.get(freeReels[i][j]).index);
 					}
 					System.out.print("\t");
 				}
@@ -1537,8 +1520,7 @@ public class Main extends Application {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES
-					.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; baseReels != null && i < baseReels.length; i++) {
 				for (int j = 0; j < baseReels[i].length; j++) {
@@ -1549,8 +1531,8 @@ public class Main extends Application {
 				System.out.print("\tReel " + (i + 1));
 			}
 			System.out.println();
-			for (int j = 0; j < SYMBOLS_NAMES.size(); j++) {
-				System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			for (int j = 0; j < SYMBOLS.size(); j++) {
+				System.out.print(SYMBOLS.get(j).name + "\t");
 				for (int i = 0; i < counters.length; i++) {
 					System.out.print(counters[i][j] + "\t");
 				}
@@ -1577,8 +1559,7 @@ public class Main extends Application {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS_NAMES
-					.size()];
+			int[][] counters = new int[paytable.length - 1][SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; freeReels != null && i < freeReels.length; i++) {
 				for (int j = 0; j < freeReels[i].length; j++) {
@@ -1589,8 +1570,8 @@ public class Main extends Application {
 				System.out.print("\tReel " + (i + 1));
 			}
 			System.out.println();
-			for (int j = 0; j < SYMBOLS_NAMES.size(); j++) {
-				System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			for (int j = 0; j < SYMBOLS.size(); j++) {
+				System.out.print(SYMBOLS.get(j).name + "\t");
 				for (int i = 0; i < counters.length; i++) {
 					System.out.print(counters[i][j] + "\t");
 				}
@@ -1769,7 +1750,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < baseSymbolMoney[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < baseSymbolMoney.length; i++) {
 				System.out.print(
 						(double) baseSymbolMoney[i][j] / (double) lostMoney
@@ -1785,7 +1766,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < baseSymbolMoney[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < baseSymbolMoney.length; i++) {
 				System.out.print(
 						(double) baseSymbolMoney[i][j] / (double) baseMoney
@@ -1801,7 +1782,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < baseGameSymbolsHitRate[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < baseGameSymbolsHitRate.length; i++) {
 				System.out.print((double) baseGameSymbolsHitRate[i][j] + "\t");
 			}
@@ -1815,7 +1796,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < baseGameSymbolsHitRate[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < baseGameSymbolsHitRate.length; i++) {
 				System.out.print((double) baseGameSymbolsHitRate[i][j]
 						/ (double) totalNumberOfGames + "\t");
@@ -1831,7 +1812,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < freeSymbolMoney[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < freeSymbolMoney.length; i++) {
 				System.out.print(
 						(double) freeSymbolMoney[i][j] / (double) lostMoney
@@ -1847,7 +1828,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < freeSymbolMoney[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < freeSymbolMoney.length; i++) {
 				System.out.print(
 						(double) freeSymbolMoney[i][j] / (double) freeMoney
@@ -1863,7 +1844,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < freeGameSymbolsHitRate[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < freeGameSymbolsHitRate.length; i++) {
 				System.out.print((double) freeGameSymbolsHitRate[i][j]
 						/ (double) totalNumberOfGames + "\t");
@@ -1878,7 +1859,7 @@ public class Main extends Application {
 		}
 		System.out.println();
 		for (int j = 0; j < freeGameSymbolsHitRate[0].length; j++) {
-			System.out.print(SYMBOLS_NAMES.get(j) + "\t");
+			System.out.print(SYMBOLS.get(j).name + "\t");
 			for (int i = 0; i < freeGameSymbolsHitRate.length; i++) {
 				System.out.print((double) freeGameSymbolsHitRate[i][j] + "\t");
 			}
@@ -1903,12 +1884,12 @@ public class Main extends Application {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
-				if (view[i][j] == NO_SYMBOL_INDEX) {
+				if (view[i][j] == Util.NO_SYMBOL_INDEX) {
 					out.print("***\t");
 					continue;
 				}
 
-				out.print(SYMBOLS_NAMES.get(view[i][j]) + "\t");
+				out.print(SYMBOLS.get(view[i][j]).name + "\t");
 			}
 
 			out.println();
@@ -1975,37 +1956,46 @@ public class Main extends Application {
 		freeGamesMultiplier = (int) sheet.getRow(9).getCell(1)
 				.getNumericCellValue();
 
+		/* Read all symbols images. */
+		List<XSSFPictureData> images = workbook.getAllPictures();
+
 		/* Store all symbol names and mark special like wilds and scatters. */
 		WILD_INDICES.clear();
 		EXTEND_WILD_INDICES.clear();
 		SCATTER_INDICES.clear();
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
-			SYMBOLS_NAMES.add(sheet.getRow(s).getCell(0).getStringCellValue());
-			SYMBOLS_NUMBERS.add(
-					(int) sheet.getRow(s).getCell(2).getNumericCellValue());
+			Symbol symbol = new Symbol();
+
+			symbol.name = sheet.getRow(s).getCell(0).getStringCellValue()
+					.toString();
+			symbol.index = (int) sheet.getRow(s).getCell(2)
+					.getNumericCellValue();
+			symbol.type = Symbol.Type.REGULAR;
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Wild") == true) {
+				symbol.type = Symbol.Type.WILD;
 				WILD_INDICES.add(s - 1);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Extend") == true) {
+				symbol.type = Symbol.Type.EXTEND;
 				WILD_INDICES.add(s - 1);
 				EXTEND_WILD_INDICES.add(s - 1);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Scatter") == true) {
+				symbol.type = Symbol.Type.SCATTER;
 				SCATTER_INDICES.add(s - 1);
 			}
-		}
 
-		/* Read all symbols images. */
-		for (XSSFPictureData picture : workbook.getAllPictures()) {
-			SYMBOLS_IMAGES.add(
-					new Image(new ByteArrayInputStream(picture.getData())));
+			symbol.image = new Image(
+					new ByteArrayInputStream(images.get(s - 1).getData()));
+
+			SYMBOLS.add(symbol);
 		}
 
 		/* Load pay table. */
@@ -2051,7 +2041,15 @@ public class Main extends Application {
 					/* Check for valid symbol values. */
 					String value = sheet.getRow(r).getCell(c)
 							.getStringCellValue();
-					if (SYMBOLS_NAMES.contains(value) == false) {
+
+					boolean found = false;
+					for (Symbol symbol : SYMBOLS) {
+						if (symbol.name.equals(value) == true) {
+							found = true;
+						}
+					}
+
+					if (found == false) {
 						break;
 					}
 				} catch (Exception e) {
@@ -2080,7 +2078,15 @@ public class Main extends Application {
 					/* Check for valid symbol values. */
 					String value = sheet.getRow(r).getCell(c)
 							.getStringCellValue();
-					if (SYMBOLS_NAMES.contains(value) == false) {
+
+					boolean found = false;
+					for (Symbol symbol : SYMBOLS) {
+						if (symbol.name.equals(value) == true) {
+							found = true;
+						}
+					}
+
+					if (found == false) {
 						break;
 					}
 				} catch (Exception e) {
@@ -2114,7 +2120,7 @@ public class Main extends Application {
 	 */
 	private static String[][] initialReels(int targetLength) {
 		/* Initialize sums. */
-		double values[] = new double[SYMBOLS_NAMES.size()];
+		double values[] = new double[SYMBOLS.size()];
 		for (int symbol = 0; symbol < values.length; symbol++) {
 			values[symbol] = 0D;
 		}
@@ -2167,7 +2173,7 @@ public class Main extends Application {
 		for (int symbol = 0, level = 0; symbol < values.length; symbol++) {
 			for (int counter = 0; counter < values[symbol]; counter++) {
 				for (int reel = 0; reel < strips.length; reel++) {
-					strips[reel][level] = SYMBOLS_NAMES.get(symbol);
+					strips[reel][level] = SYMBOLS.get(symbol).name;
 				}
 				level++;
 			}
@@ -2342,7 +2348,7 @@ public class Main extends Application {
 					 * one symbol in it.
 					 */
 					for (int j = 0; j < stacks.size(); j++) {
-						int index2 = PRNG.nextInt(stacks.size());
+						int index2 = Util.PRNG.nextInt(stacks.size());
 						List<String> random = stacks.get(index2);
 
 						/*
@@ -2752,8 +2758,8 @@ public class Main extends Application {
 
 				grid.add(symbolsBorders[i][j], i, j);
 
-				symbolsViews[i][j].setImage(
-						SYMBOLS_IMAGES.get(k % SYMBOLS_IMAGES.size()));
+				symbolsViews[i][j]
+						.setImage(SYMBOLS.get(k % SYMBOLS.size()).image);
 			}
 		}
 
@@ -2775,11 +2781,16 @@ public class Main extends Application {
 
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
-					if (view[i][j] == NO_SYMBOL_INDEX) {
+					if (view[i][j] == Util.NO_SYMBOL_INDEX) {
 						continue;
 					}
 
-					symbolsViews[i][j].setImage(SYMBOLS_IMAGES.get(view[i][j]));
+					/* Find symbol by its index. */
+					for (Symbol symbol : SYMBOLS) {
+						if (view[i][j] == symbol.index) {
+							symbolsViews[i][j].setImage(symbol.image);
+						}
+					}
 				}
 			}
 		});
