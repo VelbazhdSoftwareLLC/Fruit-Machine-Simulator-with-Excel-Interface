@@ -22,6 +22,6 @@ final class Util {
 		NO_SYMBOL.index = -1;
 		NO_SYMBOL.name = "";
 		NO_SYMBOL.type = Symbol.Type.NONE;
-		NO_SYMBOL.image = new Image("");
+		NO_SYMBOL.image = null;
 	}
 }

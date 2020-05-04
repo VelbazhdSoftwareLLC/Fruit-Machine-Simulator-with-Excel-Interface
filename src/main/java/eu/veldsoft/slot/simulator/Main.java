@@ -87,10 +87,7 @@ public class Main extends Application {
 	private static int[][] paytable = {};
 
 	/** Lines combinations. */
-	private static int[][] lines = {};
-
-	/** List of lines colors. */
-	private static final List<Color> LINES_COLORS = new ArrayList<Color>();
+	private static final List<Line> LINES = new ArrayList<Line>();
 
 	/** Target RTP percent. */
 	private static double targetRtp = 0;
@@ -325,7 +322,7 @@ public class Main extends Application {
 		singleLineBet = 1;
 
 		/* Calculate total bet. */
-		totalBet = singleLineBet * lines.length;
+		totalBet = singleLineBet * LINES.size();
 
 		/* Allocate memory for the counters. */
 		baseSymbolMoney = new long[paytable.length][SYMBOLS.size()];
@@ -656,14 +653,14 @@ public class Main extends Application {
 		int win = 0;
 
 		/* Check wins in all possible lines. */
-		for (int l = 0; l < lines.length; l++) {
+		for (int l = 0; l < LINES.size(); l++) {
 			/* Initialize an empty line. */
-			int[] line = emptyLine(lines[l].length);
-			int[] reverse = emptyLine(lines[l].length);
+			int[] line = emptyLine(LINES.get(l).positions.length);
+			int[] reverse = emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
-				int index = lines[l][i];
+				int index = LINES.get(l).positions[i];
 				line[i] = view[i][index];
 				reverse[line.length - i - 1] = view[i][index];
 			}
@@ -673,7 +670,7 @@ public class Main extends Application {
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; result > 0 && i < line.length
 					&& line[i] != Util.NO_SYMBOL.index; i++) {
-				int index = lines[l][i];
+				int index = LINES.get(l).positions[i];
 				winners[i][index] = true;
 				winnerLines[l] = true;
 			}
@@ -688,7 +685,7 @@ public class Main extends Application {
 				/* Mark cells used in win formation only if there is a win. */
 				for (int i = 0; result > 0 && i < reverse.length
 						&& reverse[i] != Util.NO_SYMBOL.index; i++) {
-					int index = lines[l][line.length - i - 1];
+					int index = LINES.get(l).positions[line.length - i - 1];
 					winners[i][index] = true;
 					winnerLines[l] = true;
 				}
@@ -852,13 +849,13 @@ public class Main extends Application {
 
 		/* Check wins in all possible lines. */
 		int progress = 0;
-		start : for (int l = 0; l < lines.length; l++) {
+		start : for (int l = 0; l < LINES.size(); l++) {
 			/* Initialize an empty line. */
-			int[] line = emptyLine(lines[l].length);
+			int[] line = emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
-				int index = lines[l][i];
+				int index = LINES.get(l).positions[i];
 				line[i] = view[i][index];
 
 				/*
@@ -874,7 +871,7 @@ public class Main extends Application {
 				 * If current symbol is wild, but there is no win no expansion
 				 * is done.
 				 */
-				if (lineWin(line, new int[lines.length][3], l) <= 0) {
+				if (lineWin(line, new int[LINES.size()][3], l) <= 0) {
 					continue;
 				}
 
@@ -1008,7 +1005,7 @@ public class Main extends Application {
 		}
 
 		/* Deep copy of the view with the expanded wilds. */
-		if (linesWin(view, new int[lines.length][3]) > 0) {
+		if (linesWin(view, new int[LINES.size()][3]) > 0) {
 			result = true;
 
 			for (int i = 0; i < view.length; i++) {
@@ -1073,7 +1070,7 @@ public class Main extends Application {
 		collapse(view, baseReels, stops);
 
 		/* Win accumulated by lines. */
-		int[][] linesStatistics = new int[lines.length][3];
+		int[][] linesStatistics = new int[LINES.size()][3];
 		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
@@ -1181,7 +1178,7 @@ public class Main extends Application {
 		}
 
 		/* Win accumulated by lines. */
-		int[][] linesStatistics = new int[lines.length][3];
+		int[][] linesStatistics = new int[LINES.size()][3];
 		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
@@ -1278,7 +1275,7 @@ public class Main extends Application {
 		}
 
 		/* Win accumulated by lines. */
-		int[][] linesStatistics = new int[lines.length][3];
+		int[][] linesStatistics = new int[LINES.size()][3];
 		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
@@ -1450,9 +1447,9 @@ public class Main extends Application {
 		/* Visualize with stars and O letter. */
 		System.out.println("Lines:");
 		for (int j = 0; j < view[0].length; j++) {
-			for (int l = 0; l < lines.length; l++) {
-				for (int i = 0; i < lines[l].length; i++) {
-					if (j == lines[l][i]) {
+			for (int l = 0; l < LINES.size(); l++) {
+				for (int i = 0; i < LINES.get(l).positions.length; i++) {
+					if (j == LINES.get(l).positions[i]) {
 						System.out.print("*");
 					} else {
 						System.out.print("O");
@@ -2011,20 +2008,29 @@ public class Main extends Application {
 		/* Load lines. */
 		sheet = workbook.getSheet("Lines");
 		winnerLines = new boolean[numberOfLines];
-		lines = new int[numberOfLines][numberOfReels];
 		for (int l = 0; l < numberOfLines; l++) {
+			Line line = new Line();
+			line.positions = new int[numberOfReels];
+			line.pattern = new boolean[numberOfReels][numberOfRows];
+			LINES.add(line);
+
 			/* Load line color. */
 			byte[] rgb = sheet.getRow(l * (numberOfRows + 1)).getCell(0)
 					.getCellStyle().getFillBackgroundXSSFColor().getRGB();
-			LINES_COLORS.add(
-					new Color(rgb[0] & 0xFF, rgb[1] & 0xFF, rgb[2] & 0xFF));
+			LINES.get(l).color = new Color(rgb[0] & 0xFF, rgb[1] & 0xFF,
+					rgb[2] & 0xFF);
 
 			/* Load line mask. */
 			for (int r = 0; r < numberOfRows; r++) {
 				for (int c = 0; c < numberOfReels; c++) {
 					if (sheet.getRow(l * (numberOfRows + 1) + r).getCell(c)
 							.getStringCellValue().contains("*") == true) {
-						lines[l][c] = r;
+						LINES.get(l).positions[c] = r;
+						LINES.get(l).pattern[c][r] = true;
+					} else if (sheet.getRow(l * (numberOfRows + 1) + r)
+							.getCell(c).getStringCellValue()
+							.contains("O") == true) {
+						LINES.get(l).pattern[c][r] = false;
 					}
 				}
 			}
@@ -2815,7 +2821,7 @@ public class Main extends Application {
 				int show = -1;
 				int current = (int) ((System.currentTimeMillis() / 1000)
 						% numberOfWinningLines);
-				for (int l = 0, stop = -1; l < lines.length; l++) {
+				for (int l = 0, stop = -1; l < LINES.size(); l++) {
 					/* If it is not a winning line do nothing. */
 					if (winnerLines[l] == false) {
 						continue;
@@ -2830,11 +2836,11 @@ public class Main extends Application {
 					}
 				}
 
-				int red = LINES_COLORS.get(show).getRed();
-				int green = LINES_COLORS.get(show).getGreen();
-				int blue = LINES_COLORS.get(show).getBlue();
+				int red = LINES.get(show).color.getRed();
+				int green = LINES.get(show).color.getGreen();
+				int blue = LINES.get(show).color.getBlue();
 				for (int i = 0; i < winners.length; i++) {
-					int j = lines[show][i];
+					int j = LINES.get(show).positions[i];
 					symbolsBorders[i][j].setStyle("-fx-border-color: #"
 							+ String.format("%02X%02X%02X", red, green, blue)
 							+ "; -fx-border-width: 5;");
@@ -2852,7 +2858,7 @@ public class Main extends Application {
 
 				/* Count the number of winning lines. */
 				int counter = 0;
-				for (int l = 0; l < lines.length; l++) {
+				for (int l = 0; l < LINES.size(); l++) {
 					if (winnerLines[l] == true) {
 						counter++;
 					}
