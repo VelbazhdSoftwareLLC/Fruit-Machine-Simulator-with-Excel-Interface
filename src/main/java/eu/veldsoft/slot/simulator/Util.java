@@ -3,6 +3,8 @@ package eu.veldsoft.slot.simulator;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
+import javafx.scene.image.Image;
+
 /**
  * Utilities used in many other classes.
  * 
@@ -13,5 +15,13 @@ final class Util {
 	static final RandomGenerator PRNG = new MersenneTwister();
 
 	/** Index of the none symbol in the array of symbols. */
-	static final int NO_SYMBOL_INDEX = -1;
+	static final Symbol NO_SYMBOL = new Symbol();
+
+	/* Static initializer. */
+	static {
+		NO_SYMBOL.index = -1;
+		NO_SYMBOL.name = "";
+		NO_SYMBOL.type = Symbol.Type.NONE;
+		NO_SYMBOL.image = new Image("");
+	}
 }

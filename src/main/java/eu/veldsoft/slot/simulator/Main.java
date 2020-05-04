@@ -317,7 +317,7 @@ public class Main extends Application {
 		/* Initialize view with no symbols. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = Util.NO_SYMBOL_INDEX;
+				view[i][j] = Util.NO_SYMBOL.index;
 			}
 		}
 
@@ -400,7 +400,7 @@ public class Main extends Application {
 					continue;
 				}
 
-				view[i][j] = Util.NO_SYMBOL_INDEX;
+				view[i][j] = Util.NO_SYMBOL.index;
 			}
 		}
 
@@ -413,10 +413,10 @@ public class Main extends Application {
 				 * Swap empty symbol with the symbol above it and restart reel
 				 * checking.
 				 */
-				if (view[i][j - 1] != Util.NO_SYMBOL_INDEX
-						&& view[i][j] == Util.NO_SYMBOL_INDEX) {
+				if (view[i][j - 1] != Util.NO_SYMBOL.index
+						&& view[i][j] == Util.NO_SYMBOL.index) {
 					view[i][j] = view[i][j - 1];
-					view[i][j - 1] = Util.NO_SYMBOL_INDEX;
+					view[i][j - 1] = Util.NO_SYMBOL.index;
 					done = false;
 				}
 			}
@@ -431,7 +431,7 @@ public class Main extends Application {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = view[i].length - 1; j >= 0; j--) {
 				/* If the cell is not empty do nothing. */
-				if (view[i][j] != Util.NO_SYMBOL_INDEX) {
+				if (view[i][j] != Util.NO_SYMBOL.index) {
 					continue;
 				}
 
@@ -496,7 +496,7 @@ public class Main extends Application {
 
 		/* If there is no leading wild there is no wild win. */
 		if (WILD_INDICES.contains(line[0]) == false) {
-			return (new int[]{Util.NO_SYMBOL_INDEX, 0, 0});
+			return (new int[]{Util.NO_SYMBOL.index, 0, 0});
 		}
 
 		/* Each wild can lead to different level of win. */
@@ -549,7 +549,7 @@ public class Main extends Application {
 
 		/* Wild symbol passing to find first regular symbol. */
 		for (int i = 0; i < line.length; i++) {
-			if (line[i] == Util.NO_SYMBOL_INDEX) {
+			if (line[i] == Util.NO_SYMBOL.index) {
 				break;
 			}
 
@@ -602,7 +602,7 @@ public class Main extends Application {
 
 		/* Clear unused symbols. */
 		for (int i = number; i < line.length; i++) {
-			line[i] = Util.NO_SYMBOL_INDEX;
+			line[i] = Util.NO_SYMBOL.index;
 		}
 
 		/* Calculate single line win. */
@@ -636,7 +636,7 @@ public class Main extends Application {
 		int[] line = new int[size];
 
 		for (int i = 0; i < line.length; i++) {
-			line[i] = Util.NO_SYMBOL_INDEX;
+			line[i] = Util.NO_SYMBOL.index;
 		}
 
 		return line;
@@ -672,7 +672,7 @@ public class Main extends Application {
 
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; result > 0 && i < line.length
-					&& line[i] != Util.NO_SYMBOL_INDEX; i++) {
+					&& line[i] != Util.NO_SYMBOL.index; i++) {
 				int index = lines[l][i];
 				winners[i][index] = true;
 				winnerLines[l] = true;
@@ -687,7 +687,7 @@ public class Main extends Application {
 
 				/* Mark cells used in win formation only if there is a win. */
 				for (int i = 0; result > 0 && i < reverse.length
-						&& reverse[i] != Util.NO_SYMBOL_INDEX; i++) {
+						&& reverse[i] != Util.NO_SYMBOL.index; i++) {
 					int index = lines[l][line.length - i - 1];
 					winners[i][index] = true;
 					winnerLines[l] = true;
@@ -1884,7 +1884,7 @@ public class Main extends Application {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
-				if (view[i][j] == Util.NO_SYMBOL_INDEX) {
+				if (view[i][j] == Util.NO_SYMBOL.index) {
 					out.print("***\t");
 					continue;
 				}
@@ -2781,7 +2781,7 @@ public class Main extends Application {
 
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
-					if (view[i][j] == Util.NO_SYMBOL_INDEX) {
+					if (view[i][j] == Util.NO_SYMBOL.index) {
 						continue;
 					}
 
