@@ -53,6 +53,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -148,6 +151,9 @@ public class Main extends Application {
 
 	/** Total amount of won money in base game. */
 	private static long baseMoney = 0L;
+
+	/** Game balance, which is the credit after every base game. */
+	private static List<Integer> balance = new ArrayList<Integer>();
 
 	/**
 	 * All values as win in the base game (even zeros) for the whole simulation.
@@ -1186,6 +1192,7 @@ public class Main extends Application {
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
 		win *= freeGamesMultiplier;
+		credit += win;
 
 		/* Collect statistics for the lines win. */
 		for (int statistics[] : linesStatistics) {
@@ -1240,6 +1247,9 @@ public class Main extends Application {
 	 * Play single base game.
 	 */
 	private static void singleBaseGame() {
+		lostMoney += totalBet;
+		credit -= totalBet;
+
 		/* In brute force mode reels stops are not random. */
 		if (bruteForce == true) {
 			nextCombination(reelsStops);
@@ -1282,6 +1292,7 @@ public class Main extends Application {
 		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
+		credit += win;
 
 		/* Collect statistics for the lines win. */
 		for (int statistics[] : linesStatistics) {
@@ -1358,6 +1369,9 @@ public class Main extends Application {
 		if (singleRunFreeGames > maxSingleRunFreeGames) {
 			maxSingleRunFreeGames = singleRunFreeGames;
 		}
+
+		/* Track of the balance should be done after every base game. */
+		balance.add(credit);
 	}
 
 	/**
@@ -2407,6 +2421,9 @@ public class Main extends Application {
 
 	private static void simulate(long numberOfSimulations,
 			long progressPrintOnIteration) {
+		/* It it is first game the balance should be written before the game. */
+		balance.add(credit);
+
 		/* Simulation main loop. */
 		for (long g = 0L; g < numberOfSimulations; g++) {
 			if (verboseOutput == true && g == 0) {
@@ -2433,8 +2450,6 @@ public class Main extends Application {
 			}
 
 			totalNumberOfGames++;
-
-			lostMoney += totalBet;
 
 			singleBaseGame();
 		}
@@ -2751,6 +2766,10 @@ public class Main extends Application {
 
 	private static TextField totalWinView = new TextField();
 
+	private static LineChart<Number, Number> balanceView;
+
+	private static XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+
 	@Override
 	public void start(Stage stage) throws Exception {
 		GridPane grid = new GridPane();
@@ -2806,18 +2825,39 @@ public class Main extends Application {
 					}
 				}
 			}
+
+			series.getData().add(new XYChart.Data<Number, Number>(
+					balance.size(), balance.get(balance.size() - 1)));
 		});
 
 		creditView.setEditable(false);
 		totalBetView.setEditable(false);
 		totalWinView.setEditable(false);
 
+		NumberAxis xAxis;
+		NumberAxis yAxis;
+		balanceView = new LineChart<Number, Number>(xAxis = new NumberAxis(),
+				yAxis = new NumberAxis());
+		balanceView.setTitle("Game Balance");
+		balanceView.setCreateSymbols(false);
+		xAxis.setLabel("Number of Games");
+		yAxis.setLabel("Credit");
+
+		series.setName("Credit");
+		balanceView.getData().add(series);
+
+		/* Initial point. */
+		balance.add(credit);
+		series.getData().add(new XYChart.Data<Number, Number>(balance.size(),
+				balance.get(balance.size() - 1)));
+
 		VBox vbox = new VBox(grid,
 				new BorderPane(null, null,
 						new HBox(new Label("Credit:"), creditView,
 								new Label("Total Bet:"), totalBetView,
 								new Label("Total Win:"), totalWinView, spin),
-						null, null));
+						null, null),
+				balanceView);
 
 		stage.setScene(new Scene(vbox));
 		stage.setTitle(
