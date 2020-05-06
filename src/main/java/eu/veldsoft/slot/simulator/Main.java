@@ -56,6 +56,8 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -87,7 +89,7 @@ public class Main extends Application {
 	private static final List<Symbol> SYMBOLS = new ArrayList<Symbol>();
 
 	/** Slot game pay table. */
-	private static int[][] paytable = {};
+	private static int[][] PAYTABLE = {};
 
 	/** Lines combinations. */
 	private static final List<Line> LINES = new ArrayList<Line>();
@@ -140,6 +142,9 @@ public class Main extends Application {
 	/** Total bet in single base game spin. */
 	private static int totalBet = 0;
 
+	/** Total win in single base game spin. */
+	private static int totalWin = 0;
+
 	/** Free spins to be played. */
 	private static int freeGamesNumber = 0;
 
@@ -153,7 +158,10 @@ public class Main extends Application {
 	private static long baseMoney = 0L;
 
 	/** Game balance, which is the credit after every base game. */
-	private static List<Integer> balance = new ArrayList<Integer>();
+	private static final List<Integer> balance = new ArrayList<Integer>();
+
+	/** List of coins to be loaded as credit. */
+	private static final List<Integer> coins = new ArrayList<Integer>();
 
 	/**
 	 * All values as win in the base game (even zeros) for the whole simulation.
@@ -334,10 +342,10 @@ public class Main extends Application {
 		totalBet = singleLineBet * LINES.size();
 
 		/* Allocate memory for the counters. */
-		baseSymbolMoney = new long[paytable.length][SYMBOLS.size()];
-		baseGameSymbolsHitRate = new long[paytable.length][SYMBOLS.size()];
-		freeSymbolMoney = new long[paytable.length][SYMBOLS.size()];
-		freeGameSymbolsHitRate = new long[paytable.length][SYMBOLS.size()];
+		baseSymbolMoney = new long[PAYTABLE.length][SYMBOLS.size()];
+		baseGameSymbolsHitRate = new long[PAYTABLE.length][SYMBOLS.size()];
+		freeSymbolMoney = new long[PAYTABLE.length][SYMBOLS.size()];
+		freeGameSymbolsHitRate = new long[PAYTABLE.length][SYMBOLS.size()];
 		// TODO Counters should be initialized with zeros.
 
 		baseOutcomes.clear();
@@ -372,11 +380,14 @@ public class Main extends Application {
 
 	/**
 	 * Clear supporting structures.
-	 * 
-	 * @param winners
-	 *            Flags of the cells.
 	 */
 	private static void clear() {
+		for (int i = 0; i < view.length; i++) {
+			for (int j = 0; j < view[i].length; j++) {
+				view[i][j] = Util.NO_SYMBOL.index;
+			}
+		}
+
 		for (int i = 0; i < winners.length; i++) {
 			for (int j = 0; j < winners[i].length; j++) {
 				winners[i][j] = false;
@@ -520,7 +531,7 @@ public class Main extends Application {
 			}
 
 			/* Calculate win marked by line with wilds. */
-			values[j][2] = singleLineBet * paytable[values[j][1]][values[j][0]];
+			values[j][2] = singleLineBet * PAYTABLE[values[j][1]][values[j][0]];
 			if (values[index][2] < values[j][2]) {
 				index = j;
 			}
@@ -612,7 +623,7 @@ public class Main extends Application {
 		}
 
 		/* Calculate single line win. */
-		int win = singleLineBet * paytable[number][symbol] * lineMultiplier;
+		int win = singleLineBet * PAYTABLE[number][symbol] * lineMultiplier;
 
 		/* Adjust the win according wild line information. */
 		if (win < wildWin[2]) {
@@ -740,10 +751,10 @@ public class Main extends Application {
 			/* Calculate scatter win. */
 			int value = 0;
 			if (luckyLadysCharm == true) {
-				value = paytable[numberOfScatters.get(scatter)][scatter]
+				value = PAYTABLE[numberOfScatters.get(scatter)][scatter]
 						* scatterMultiplier;
 			} else {
-				value = paytable[numberOfScatters.get(scatter)][scatter]
+				value = PAYTABLE[numberOfScatters.get(scatter)][scatter]
 						* totalBet * scatterMultiplier;
 			}
 
@@ -1192,7 +1203,7 @@ public class Main extends Application {
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
 		win *= freeGamesMultiplier;
-		credit += win;
+		totalWin += win;
 
 		/* Collect statistics for the lines win. */
 		for (int statistics[] : linesStatistics) {
@@ -1247,6 +1258,9 @@ public class Main extends Application {
 	 * Play single base game.
 	 */
 	private static void singleBaseGame() {
+		totalNumberOfGames++;
+
+		totalWin = 0;
 		lostMoney += totalBet;
 		credit -= totalBet;
 
@@ -1292,7 +1306,7 @@ public class Main extends Application {
 		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
 		int win = linesWin(view, linesStatistics)
 				+ scatterWin(view, scatterStatistics);
-		credit += win;
+		totalWin += win;
 
 		/* Collect statistics for the lines win. */
 		for (int statistics[] : linesStatistics) {
@@ -1369,6 +1383,9 @@ public class Main extends Application {
 		if (singleRunFreeGames > maxSingleRunFreeGames) {
 			maxSingleRunFreeGames = singleRunFreeGames;
 		}
+
+		/* At the end of base game credit is taken. */
+		credit += totalWin;
 
 		/* Track of the balance should be done after every base game. */
 		balance.add(credit);
@@ -1448,14 +1465,14 @@ public class Main extends Application {
 		System.out.println();
 
 		System.out.println("Paytable:");
-		for (int i = 0; i < paytable.length; i++) {
+		for (int i = 0; i < PAYTABLE.length; i++) {
 			System.out.print("\t" + i + " of");
 		}
 		System.out.println();
-		for (int j = 0; j < paytable[0].length; j++) {
+		for (int j = 0; j < PAYTABLE[0].length; j++) {
 			System.out.print(SYMBOLS.get(j).name + "\t");
-			for (int i = 0; i < paytable.length; i++) {
-				System.out.print(paytable[i][j] + "\t");
+			for (int i = 0; i < PAYTABLE.length; i++) {
+				System.out.print(PAYTABLE[i][j] + "\t");
 			}
 			System.out.println();
 		}
@@ -1534,7 +1551,7 @@ public class Main extends Application {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS.size()];
+			int[][] counters = new int[PAYTABLE.length - 1][SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; baseReels != null && i < baseReels.length; i++) {
 				for (int j = 0; j < baseReels[i].length; j++) {
@@ -1573,7 +1590,7 @@ public class Main extends Application {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[paytable.length - 1][SYMBOLS.size()];
+			int[][] counters = new int[PAYTABLE.length - 1][SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; freeReels != null && i < freeReels.length; i++) {
 				for (int j = 0; j < freeReels[i].length; j++) {
@@ -2014,10 +2031,10 @@ public class Main extends Application {
 
 		/* Load pay table. */
 		sheet = workbook.getSheet("Paytable");
-		paytable = new int[numberOfReels + 1][numberOfSymbols];
+		PAYTABLE = new int[numberOfReels + 1][numberOfSymbols];
 		for (int r = 1; r <= numberOfSymbols; r++) {
 			for (int c = 1; c <= numberOfReels; c++) {
-				paytable[c][r - 1] = (int) (sheet.getRow(r)
+				PAYTABLE[c][r - 1] = (int) (sheet.getRow(r)
 						.getCell(numberOfReels - c + 1).getNumericCellValue());
 			}
 		}
@@ -2129,6 +2146,25 @@ public class Main extends Application {
 			}
 		}
 
+		/* Load bills list. */
+		sheet = workbook.getSheet("Bills Loading");
+		for (int r = 1; true; r++) {
+			try {
+				/* Check for valid number values. */
+				int bill = (int) sheet.getRow(r).getCell(0)
+						.getNumericCellValue();
+				int amount = (int) sheet.getRow(r).getCell(1)
+						.getNumericCellValue();
+
+				/* Bills have 100 coins. */
+				for (int i = 0; i < amount; i++) {
+					coins.add(bill * 100);
+				}
+			} catch (Exception e) {
+				break;
+			}
+		}
+
 		view = new int[numberOfReels][numberOfRows];
 		winners = new boolean[numberOfReels][numberOfRows];
 	}
@@ -2150,10 +2186,10 @@ public class Main extends Application {
 
 		/* Sum win coefficients for each symbol. */
 		double total = 0;
-		for (int numberOf = 0; numberOf < paytable.length; numberOf++) {
-			for (int symbol = 0; symbol < paytable[numberOf].length; symbol++) {
-				values[symbol] += paytable[numberOf][symbol];
-				total += paytable[numberOf][symbol];
+		for (int numberOf = 0; numberOf < PAYTABLE.length; numberOf++) {
+			for (int symbol = 0; symbol < PAYTABLE[numberOf].length; symbol++) {
+				values[symbol] += PAYTABLE[numberOf][symbol];
+				total += PAYTABLE[numberOf][symbol];
 			}
 		}
 
@@ -2448,8 +2484,6 @@ public class Main extends Application {
 				}
 				System.out.println();
 			}
-
-			totalNumberOfGames++;
 
 			singleBaseGame();
 		}
@@ -2760,20 +2794,36 @@ public class Main extends Application {
 
 	private static ImageView symbolsViews[][] = null;
 
-	private static TextField creditView = new TextField();
+	private static TextField creditText = new TextField();
 
-	private static TextField totalBetView = new TextField();
+	private static TextField totalBetText = new TextField();
 
-	private static TextField totalWinView = new TextField();
+	private static TextField totalWinText = new TextField();
 
-	private static LineChart<Number, Number> balanceView;
+	private static LineChart<Number, Number> balanceChart;
 
 	private static XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
+	private static TextField autoRunText = new TextField();
+
+	private static TextField loadCreditText = new TextField();
+
 	@Override
 	public void start(Stage stage) throws Exception {
+		creditText.setPrefWidth(80);
+		creditText.setMaxWidth(80);
+		totalBetText.setPrefWidth(80);
+		totalBetText.setMaxWidth(80);
+		totalWinText.setPrefWidth(80);
+		totalWinText.setMaxWidth(80);
+		autoRunText.setPrefWidth(80);
+		autoRunText.setMaxWidth(80);
+		loadCreditText.setPrefWidth(80);
+		loadCreditText.setMaxWidth(80);
+
 		GridPane grid = new GridPane();
 
+		/* Setup initial screen. */
 		symbolsBorders = new HBox[view.length][];
 		symbolsViews = new ImageView[view.length][];
 		for (int i = 0, k = 0; i < view.length; i++) {
@@ -2793,17 +2843,27 @@ public class Main extends Application {
 			}
 		}
 
-		Button spin = new Button("SPIN");
-		spin.setOnAction(value -> {
+		/* Run single game. */
+		Button spinButton = new Button("SPIN");
+		spinButton.setOnAction(value -> {
+			/* Check for available balance. */
+			if (totalBet > credit) {
+				(new Alert(AlertType.INFORMATION, "Insufficient credit!"))
+						.show();
+				return;
+			}
+
 			singleBaseGame();
 
-			creditView.setText("" + credit);
+			/* Update financial information. */
+			creditText.setText("" + credit);
+			totalBetText.setText("" + totalBet);
+			totalWinText.setText("" + totalWin);
 
-			totalBetView.setText("" + totalBet);
+			series.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames, credit));
 
-			totalWinView
-					.setText("" + baseOutcomes.get(baseOutcomes.size() - 1));
-
+			/* Clear winning lines information. */
 			for (int i = 0; i < symbolsBorders.length; i++) {
 				for (int j = 0; j < symbolsBorders[i].length; j++) {
 					symbolsBorders[i][j].setStyle(
@@ -2811,6 +2871,7 @@ public class Main extends Application {
 				}
 			}
 
+			/* Visualize symbols on the screen. */
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
 					if (view[i][j] == Util.NO_SYMBOL.index) {
@@ -2825,40 +2886,117 @@ public class Main extends Application {
 					}
 				}
 			}
-
-			series.getData().add(new XYChart.Data<Number, Number>(
-					balance.size(), balance.get(balance.size() - 1)));
 		});
 
-		creditView.setEditable(false);
-		totalBetView.setEditable(false);
-		totalWinView.setEditable(false);
+		creditText.setEditable(false);
+		totalBetText.setEditable(false);
+		totalWinText.setEditable(false);
 
+		/* Setup chart visual component. */
 		NumberAxis xAxis;
 		NumberAxis yAxis;
-		balanceView = new LineChart<Number, Number>(xAxis = new NumberAxis(),
+		balanceChart = new LineChart<Number, Number>(xAxis = new NumberAxis(),
 				yAxis = new NumberAxis());
-		balanceView.setTitle("Game Balance");
-		balanceView.setCreateSymbols(false);
+		balanceChart.setLegendVisible(false);
+		balanceChart.setTitle("Game Balance");
+		balanceChart.setCreateSymbols(false);
 		xAxis.setLabel("Number of Games");
 		yAxis.setLabel("Credit");
-
 		series.setName("Credit");
-		balanceView.getData().add(series);
+		balanceChart.getData().add(series);
 
-		/* Initial point. */
-		balance.add(credit);
-		series.getData().add(new XYChart.Data<Number, Number>(balance.size(),
-				balance.get(balance.size() - 1)));
+		/* Limit value to number. */
+		autoRunText.setText("10");
+		autoRunText.textProperty().addListener((observable, before, after) -> {
+			if (after.matches("\\d*")) {
+				return;
+			}
 
+			loadCreditText.setText(before.replaceAll("[^\\d]", ""));
+		});
+
+		/* Load credit action. */
+		Button autoRunButton = new Button("Auto Run");
+		autoRunButton.setOnAction(value -> {
+			/* Number of auto run games. */
+			int runs = Integer.valueOf(autoRunText.getText());
+
+			/* Play many games. */
+			for (int i = 0; i < runs && credit > totalBet; i++) {
+				singleBaseGame();
+
+				/* Update financial information. */
+				creditText.setText("" + credit);
+				totalBetText.setText("" + totalBet);
+				totalWinText.setText("" + totalWin);
+
+				series.getData().add(new XYChart.Data<Number, Number>(
+						totalNumberOfGames, credit));
+			}
+		});
+
+		/* Limit value to number. */
+		loadCreditText.setText("1000");
+		loadCreditText.textProperty()
+				.addListener((observable, before, after) -> {
+					if (after.matches("\\d*")) {
+						return;
+					}
+
+					loadCreditText.setText(before.replaceAll("[^\\d]", ""));
+				});
+
+		/* Load credit action. */
+		Button loadCreditButton = new Button("Load Credit");
+		loadCreditButton.setOnAction(value -> {
+			credit += Integer.valueOf(loadCreditText.getText());
+			balance.add(credit);
+			creditText.setText("" + credit);
+		});
+
+		/* Do bills loading simulation. */
+		Button simulateBillsButton = new Button("Simulate Bills");
+		simulateBillsButton.setOnAction(value -> {
+			creditText.setText("");
+			totalBetText.setText("");
+			totalWinText.setText("");
+
+			for (int load : coins) {
+				credit += load;
+				balance.add(credit);
+
+				/* Play loaded bill. */
+				while (credit > totalBet) {
+					singleBaseGame();
+					series.getData().add(new XYChart.Data<Number, Number>(
+							totalNumberOfGames, credit));
+				}
+			}
+
+			clear();
+		});
+
+		Button clearChartButton = new Button("Clear Chart");
+		clearChartButton.setOnAction(value -> {
+			totalNumberOfGames = 0;
+			balance.clear();
+			series.getData().clear();
+		});
+
+		/* Assemble visual controls layout. */
 		VBox vbox = new VBox(grid,
-				new BorderPane(null, null,
-						new HBox(new Label("Credit:"), creditView,
-								new Label("Total Bet:"), totalBetView,
-								new Label("Total Win:"), totalWinView, spin),
+				new BorderPane(null, null, new HBox(new Label("Credit:"),
+						creditText, new Label("Total Bet:"), totalBetText,
+						new Label("Total Win:"), totalWinText, spinButton),
 						null, null),
-				balanceView);
+				balanceChart,
+				new BorderPane(null, null,
+						new HBox(autoRunButton, autoRunText, loadCreditButton,
+								loadCreditText, simulateBillsButton,
+								clearChartButton),
+						null, null));
 
+		/* Show the scene. */
 		stage.setScene(new Scene(vbox));
 		stage.setTitle(
 				"Fruit Machine Simulator with Excel Interface version 1.0.0 Copyrights (C) 2017-2020 Velbazhd Software LLC");
