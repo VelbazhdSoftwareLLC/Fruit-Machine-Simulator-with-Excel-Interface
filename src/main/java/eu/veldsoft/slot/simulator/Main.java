@@ -122,7 +122,7 @@ public class Main extends Application {
 	private static boolean[][] winners = {};
 
 	/** Lines on the screen which took part of the wins. */
-	private static boolean[] winnerLines = {};
+	private static int[] winnerLines = {};
 
 	/** Current free spins multiplier. */
 	private static int freeGamesMultiplier = 0;
@@ -395,7 +395,7 @@ public class Main extends Application {
 		}
 
 		for (int i = 0; i < winnerLines.length; i++) {
-			winnerLines[i] = false;
+			winnerLines[i] = 0;
 		}
 	}
 
@@ -692,7 +692,7 @@ public class Main extends Application {
 					&& line[i] != Util.NO_SYMBOL.index; i++) {
 				int index = LINES.get(l).positions[i];
 				winners[i][index] = true;
-				winnerLines[l] = true;
+				winnerLines[l] = result;
 			}
 
 			/* Accumulate line win. */
@@ -707,7 +707,7 @@ public class Main extends Application {
 						&& reverse[i] != Util.NO_SYMBOL.index; i++) {
 					int index = LINES.get(l).positions[line.length - i - 1];
 					winners[i][index] = true;
-					winnerLines[l] = true;
+					winnerLines[l] = result;
 				}
 
 				/* Accumulate line win. */
@@ -2041,7 +2041,7 @@ public class Main extends Application {
 
 		/* Load lines. */
 		sheet = workbook.getSheet("Lines");
-		winnerLines = new boolean[numberOfLines];
+		winnerLines = new int[numberOfLines];
 		for (int l = 0; l < numberOfLines; l++) {
 			Line line = new Line();
 			line.positions = new int[numberOfReels];
@@ -2798,6 +2798,8 @@ public class Main extends Application {
 
 	private static TextField totalBetText = new TextField();
 
+	private static TextField singleWinText = new TextField();
+
 	private static TextField totalWinText = new TextField();
 
 	private static LineChart<Number, Number> balanceChart;
@@ -2814,6 +2816,8 @@ public class Main extends Application {
 		creditText.setMaxWidth(80);
 		totalBetText.setPrefWidth(80);
 		totalBetText.setMaxWidth(80);
+		singleWinText.setPrefWidth(80);
+		singleWinText.setMaxWidth(80);
 		totalWinText.setPrefWidth(80);
 		totalWinText.setMaxWidth(80);
 		autoRunText.setPrefWidth(80);
@@ -2858,6 +2862,7 @@ public class Main extends Application {
 			/* Update financial information. */
 			creditText.setText("" + credit);
 			totalBetText.setText("" + totalBet);
+			singleWinText.setText("0");
 			totalWinText.setText("" + totalWin);
 
 			series.getData().add(new XYChart.Data<Number, Number>(
@@ -2890,6 +2895,7 @@ public class Main extends Application {
 
 		creditText.setEditable(false);
 		totalBetText.setEditable(false);
+		singleWinText.setEditable(false);
 		totalWinText.setEditable(false);
 
 		/* Setup chart visual component. */
@@ -2928,6 +2934,7 @@ public class Main extends Application {
 				/* Update financial information. */
 				creditText.setText("" + credit);
 				totalBetText.setText("" + totalBet);
+				singleWinText.setText("0");
 				totalWinText.setText("" + totalWin);
 
 				series.getData().add(new XYChart.Data<Number, Number>(
@@ -2959,6 +2966,7 @@ public class Main extends Application {
 		simulateBillsButton.setOnAction(value -> {
 			creditText.setText("");
 			totalBetText.setText("");
+			singleWinText.setText("");
 			totalWinText.setText("");
 
 			for (int load : coins) {
@@ -2987,6 +2995,7 @@ public class Main extends Application {
 		VBox vbox = new VBox(grid,
 				new BorderPane(null, null, new HBox(new Label("Credit:"),
 						creditText, new Label("Total Bet:"), totalBetText,
+						new Label("Single Win:"), singleWinText,
 						new Label("Total Win:"), totalWinText, spinButton),
 						null, null),
 				balanceChart,
@@ -3010,7 +3019,7 @@ public class Main extends Application {
 						% numberOfWinningLines);
 				for (int l = 0, stop = -1; l < LINES.size(); l++) {
 					/* If it is not a winning line do nothing. */
-					if (winnerLines[l] == false) {
+					if (winnerLines[l] == 0) {
 						continue;
 					}
 
@@ -3022,6 +3031,9 @@ public class Main extends Application {
 						break;
 					}
 				}
+
+				/* Show the win from the current line. */
+				singleWinText.setText("" + winnerLines[show]);
 
 				int red = LINES.get(show).color.getRed();
 				int green = LINES.get(show).color.getGreen();
@@ -3046,7 +3058,7 @@ public class Main extends Application {
 				/* Count the number of winning lines. */
 				int counter = 0;
 				for (int l = 0; l < LINES.size(); l++) {
-					if (winnerLines[l] == true) {
+					if (winnerLines[l] > 0) {
 						counter++;
 					}
 				}
