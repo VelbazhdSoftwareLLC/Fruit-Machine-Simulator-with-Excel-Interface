@@ -52,6 +52,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -59,6 +61,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -66,6 +69,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -2802,9 +2806,15 @@ public class Main extends Application {
 
 	private static TextField totalWinText = new TextField();
 
+	private static LineChart<Number, Number> creditChart;
+
 	private static LineChart<Number, Number> balanceChart;
 
-	private static XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+	private static XYChart.Series<Number, Number> loadSeries = new XYChart.Series<Number, Number>();
+
+	private static XYChart.Series<Number, Number> clearSeries = new XYChart.Series<Number, Number>();
+
+	private static XYChart.Series<Number, Number> balanceSeries = new XYChart.Series<Number, Number>();
 
 	private static TextField autoRunText = new TextField();
 
@@ -2825,7 +2835,7 @@ public class Main extends Application {
 		loadCreditText.setPrefWidth(80);
 		loadCreditText.setMaxWidth(80);
 
-		GridPane grid = new GridPane();
+		GridPane screenGrid = new GridPane();
 
 		/* Setup initial screen. */
 		symbolsBorders = new HBox[view.length][];
@@ -2840,7 +2850,7 @@ public class Main extends Application {
 				symbolsBorders[i][j].setStyle(
 						"-fx-border-color: black; -fx-border-width: 5;");
 
-				grid.add(symbolsBorders[i][j], i, j);
+				screenGrid.add(symbolsBorders[i][j], i, j);
 
 				symbolsViews[i][j]
 						.setImage(SYMBOLS.get(k % SYMBOLS.size()).image);
@@ -2865,7 +2875,7 @@ public class Main extends Application {
 			singleWinText.setText("0");
 			totalWinText.setText("" + totalWin);
 
-			series.getData().add(new XYChart.Data<Number, Number>(
+			balanceSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames, credit));
 
 			/* Clear winning lines information. */
@@ -2899,6 +2909,10 @@ public class Main extends Application {
 		totalWinText.setEditable(false);
 
 		/* Setup chart visual component. */
+		creditChart = new LineChart<Number, Number>(new NumberAxis(),
+				new NumberAxis());
+		creditChart.getData().add(loadSeries);
+		creditChart.getData().add(clearSeries);
 		NumberAxis xAxis;
 		NumberAxis yAxis;
 		balanceChart = new LineChart<Number, Number>(xAxis = new NumberAxis(),
@@ -2908,8 +2922,24 @@ public class Main extends Application {
 		balanceChart.setCreateSymbols(false);
 		xAxis.setLabel("Number of Games");
 		yAxis.setLabel("Credit");
-		series.setName("Credit");
-		balanceChart.getData().add(series);
+		loadSeries.setName("Load Credit");
+		clearSeries.setName("Clear Credit");
+		balanceSeries.setName("Credit Balance");
+		balanceChart.getData().add(balanceSeries);
+		balanceChart.getData().add(loadSeries);
+		balanceChart.getData().add(clearSeries);
+
+		/* Flag for game screen visibility. */
+		CheckBox gameScreenVisibility = new CheckBox("Show Game Screen");
+		gameScreenVisibility.setSelected(true);
+		gameScreenVisibility.selectedProperty()
+				.addListener(new ChangeListener<Boolean>() {
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean before, Boolean after) {
+						screenGrid.setVisible(after);
+					}
+				});
 
 		/* Limit value to number. */
 		autoRunText.setText("10");
@@ -2937,7 +2967,7 @@ public class Main extends Application {
 				singleWinText.setText("0");
 				totalWinText.setText("" + totalWin);
 
-				series.getData().add(new XYChart.Data<Number, Number>(
+				balanceSeries.getData().add(new XYChart.Data<Number, Number>(
 						totalNumberOfGames, credit));
 			}
 		});
@@ -2956,9 +2986,17 @@ public class Main extends Application {
 		/* Load credit action. */
 		Button loadCreditButton = new Button("Load Credit");
 		loadCreditButton.setOnAction(value -> {
+			loadSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, 0));
+			loadSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, credit));
 			credit += Integer.valueOf(loadCreditText.getText());
 			balance.add(credit);
 			creditText.setText("" + credit);
+			loadSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, credit));
+			loadSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, 0));
 		});
 
 		/* Do bills loading simulation. */
@@ -2976,39 +3014,72 @@ public class Main extends Application {
 				/* Play loaded bill. */
 				while (credit > totalBet) {
 					singleBaseGame();
-					series.getData().add(new XYChart.Data<Number, Number>(
-							totalNumberOfGames, credit));
+					balanceSeries.getData().add(
+							new XYChart.Data<Number, Number>(totalNumberOfGames,
+									credit));
 				}
 			}
 
 			clear();
 		});
 
+		/* Load credit action. */
+		Button clearCreditButton = new Button("Clear Credit");
+		clearCreditButton.setOnAction(value -> {
+			clearSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, 0));
+			clearSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, credit));
+			credit = 0;
+			balance.add(credit);
+			creditText.setText("" + credit);
+			clearSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, credit));
+			clearSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, 0));
+		});
+
 		Button clearChartButton = new Button("Clear Chart");
 		clearChartButton.setOnAction(value -> {
 			totalNumberOfGames = 0;
 			balance.clear();
-			series.getData().clear();
+			balanceSeries.getData().clear();
+			loadSeries.getData().clear();
 		});
 
 		/* Assemble visual controls layout. */
-		VBox vbox = new VBox(grid,
+		VBox vbox = new VBox(screenGrid,
 				new BorderPane(null, null, new HBox(new Label("Credit:"),
 						creditText, new Label("Total Bet:"), totalBetText,
 						new Label("Single Win:"), singleWinText,
 						new Label("Total Win:"), totalWinText, spinButton),
 						null, null),
-				balanceChart,
-				new BorderPane(null, null,
-						new HBox(autoRunButton, autoRunText, loadCreditButton,
-								loadCreditText, simulateBillsButton,
-								clearChartButton),
-						null, null));
+				new BorderPane(null, null, new HBox(/* gameScreenVisibility, */
+						autoRunButton, autoRunText, loadCreditButton,
+						loadCreditText, clearCreditButton,
+						simulateBillsButton /* ,clearChartButton */), null,
+						null));
 
-		/* Show the scene. */
+		/* Show statistics scene. */
+		Stage statistics = new Stage();
+		statistics.setTitle("Game Statistics");
+		statistics.setScene(
+				new Scene(new StackPane(/* creditChart, */ balanceChart)));
+		statistics.setX(0);
+		statistics.setY(0);
+		statistics.show();
+
+		/* Cascade close of windows. */
+		stage.setOnCloseRequest(event -> {
+			statistics.close();
+		});
+
+		/* Show main scene. */
 		stage.setScene(new Scene(vbox));
 		stage.setTitle(
 				"Fruit Machine Simulator with Excel Interface version 1.0.0 Copyrights (C) 2017-2020 Velbazhd Software LLC");
+		stage.setX(200);
+		stage.setY(200);
 		stage.show();
 
 		/* Loop over winning lines. */

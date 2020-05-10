@@ -3,8 +3,6 @@ package eu.veldsoft.slot.simulator;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
-import javafx.scene.image.Image;
-
 /**
  * Utilities used in many other classes.
  * 
