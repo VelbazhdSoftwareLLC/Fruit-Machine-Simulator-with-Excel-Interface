@@ -2936,6 +2936,7 @@ public class Main extends Application {
 		balanceChart.getData().add(loadSeries);
 		balanceChart.getData().add(clearSeries);
 		balanceChart.getData().add(zeroSeries);
+		zeroSeries.getData().add(new XYChart.Data<Number, Number>(0, 0));
 
 		/* Adjust chart colors. */
 		creditChart.lookup(".chart-plot-background")
@@ -3014,12 +3015,17 @@ public class Main extends Application {
 					totalNumberOfGames + 1, 0));
 			loadSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames + 1, credit));
+
 			credit += Integer.valueOf(loadCreditText.getText());
 			balance.add(credit);
 			creditText.setText("" + credit);
+
 			loadSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames + 1, credit));
 			loadSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames + 1, 0));
+
+			zeroSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames + 1, 0));
 		});
 
@@ -3054,12 +3060,17 @@ public class Main extends Application {
 					totalNumberOfGames - 1, 0));
 			clearSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames - 1, credit));
+
 			credit = 0;
 			balance.add(credit);
 			creditText.setText("" + credit);
+
 			clearSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames - 1, credit));
 			clearSeries.getData().add(new XYChart.Data<Number, Number>(
+					totalNumberOfGames - 1, 0));
+
+			zeroSeries.getData().add(new XYChart.Data<Number, Number>(
 					totalNumberOfGames - 1, 0));
 		});
 
@@ -3070,6 +3081,9 @@ public class Main extends Application {
 			balanceSeries.getData().clear();
 			loadSeries.getData().clear();
 			clearSeries.getData().clear();
+			zeroSeries.getData().clear();
+
+			zeroSeries.getData().add(new XYChart.Data<Number, Number>(0, 0));
 		});
 
 		/* Assemble visual controls layout. */
