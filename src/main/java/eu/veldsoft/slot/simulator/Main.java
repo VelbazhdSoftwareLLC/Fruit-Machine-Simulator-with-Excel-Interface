@@ -245,6 +245,9 @@ public class Main extends Application {
 	/** Extra Stars style of simulation flag. */
 	private static boolean extraStars = false;
 
+	/** Arabian Nights style of simulation flag. */
+	private static boolean arabianNights = false;
+
 	/** Brute force all winning combinations in base game only flag. */
 	private static boolean bruteForce = false;
 
@@ -1149,6 +1152,12 @@ public class Main extends Application {
 		}
 
 		return win;
+	}
+
+	/**
+	 * Play single Arabian Nights bonus game.
+	 */
+	private static void singleArabianNightsBonusGame() {
 	}
 
 	/**
@@ -2588,6 +2597,8 @@ public class Main extends Application {
 				"20 Hot Blast rules of simulation."));
 		options.addOption(new Option("extrastars", false,
 				"Extra Stars rules of simulation."));
+		options.addOption(new Option("arabiannights", false,
+				"Arabian Nights rules of simulation."));
 
 		options.addOption(
 				new Option("verbose", false, "Print intermediate results."));
@@ -2742,6 +2753,11 @@ public class Main extends Application {
 		/* Switch on Extra Stars rules for the simulation. */
 		if (commands.hasOption("extrastars") == true) {
 			extraStars = true;
+		}
+
+		/* Switch on Arabian Nights rules for the simulation. */
+		if (commands.hasOption("arabiannights") == true) {
+			arabianNights = true;
 		}
 
 		/* Run brute force instead of Monte Carlo simulation. */
