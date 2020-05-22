@@ -749,8 +749,8 @@ public class Main extends Application {
 		GridPane screenGrid = new GridPane();
 
 		/* Setup initial screen. */
-		final HBox symbolsBorders[][] = new HBox[Simulation.view.length][];
-		final ImageView symbolsViews[][] = new ImageView[Simulation.view.length][];
+		final HBox[][] symbolsBorders = (HBox[][]) new HBox[Simulation.view.length][];
+		final ImageView[][] symbolsViews = (ImageView[][]) new ImageView[Simulation.view.length][];
 		for (int i = 0, k = 0; i < Simulation.view.length; i++) {
 			symbolsBorders[i] = new HBox[Simulation.view[i].length];
 			symbolsViews[i] = new ImageView[Simulation.view[i].length];
