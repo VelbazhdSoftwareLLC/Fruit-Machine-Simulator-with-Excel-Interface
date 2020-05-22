@@ -16,13 +16,19 @@ import java.util.Set;
 class Simulation {
 
 	/** Index of the scatter symbol in the array of symbols. */
-	static final Set<Integer> SCATTER_INDICES = new HashSet<Integer>();
+	static final Set<Integer> SCATTERS = new HashSet<Integer>();
 
 	/** Index of the wild symbol in the array of symbols. */
-	static final Set<Integer> WILD_INDICES = new HashSet<Integer>();
+	static final Set<Integer> WILDS = new HashSet<Integer>();
 
 	/** Index of the extend wild symbol in the array of symbols. */
-	static final Set<Integer> EXTEND_WILD_INDICES = new HashSet<Integer>();
+	static final Set<Integer> EXTENDS = new HashSet<Integer>();
+
+	/** Set of symbols to trigger free spins in the array of symbols. */
+	static final Set<Symbol> FREES = new HashSet<Symbol>();
+
+	/** Set of symbols to trigger bonus game in the array of symbols. */
+	static final Set<Symbol> BONUSES = new HashSet<Symbol>();
 
 	/** List of symbols names. */
 	static final List<Symbol> SYMBOLS = new ArrayList<Symbol>();
@@ -453,13 +459,13 @@ class Simulation {
 	 */
 	static int[] wildLineWin(int[] line) {
 		/* Wild index with counter and win amount. */
-		int[][] values = new int[WILD_INDICES.size()][];
-		for (int i = 0; i < WILD_INDICES.size(); i++) {
-			values[i] = new int[]{(Integer) (WILD_INDICES.toArray()[i]), 0, 0};
+		int[][] values = new int[WILDS.size()][];
+		for (int i = 0; i < WILDS.size(); i++) {
+			values[i] = new int[]{(Integer) (WILDS.toArray()[i]), 0, 0};
 		}
 
 		/* If there is no leading wild there is no wild win. */
-		if (WILD_INDICES.contains(line[0]) == false) {
+		if (WILDS.contains(line[0]) == false) {
 			return (new int[]{Util.NO_SYMBOL.index, 0, 0});
 		}
 
@@ -501,7 +507,7 @@ class Simulation {
 	 */
 	static int lineWin(int line[], int statistics[][], int index) {
 		/* Scatter can not lead win combination. */
-		if (SCATTER_INDICES.contains(line[0]) == true) {
+		if (SCATTERS.contains(line[0]) == true) {
 			return 0;
 		}
 
@@ -518,13 +524,13 @@ class Simulation {
 			}
 
 			/* Scatter stops the line. */
-			if (SCATTER_INDICES.contains(line[i]) == true) {
+			if (SCATTERS.contains(line[i]) == true) {
 				break;
 			}
 
 			/* First no wild symbol found. */
-			if (WILD_INDICES.contains(line[i]) == false) {
-				if (SCATTER_INDICES.contains(line[i]) == false) {
+			if (WILDS.contains(line[i]) == false) {
+				if (SCATTERS.contains(line[i]) == false) {
 					symbol = line[i];
 				}
 
@@ -538,12 +544,12 @@ class Simulation {
 		/* Wild symbol substitution. */
 		for (int i = 0; i < line.length && wildsOff == false; i++) {
 			/* Scatter is not substituted. */
-			if (SCATTER_INDICES.contains(line[i]) == true) {
+			if (SCATTERS.contains(line[i]) == true) {
 				continue;
 			}
 
 			/* Only wilds are substituted. */
-			if (WILD_INDICES.contains(line[i]) == false) {
+			if (WILDS.contains(line[i]) == false) {
 				continue;
 			}
 
@@ -660,14 +666,14 @@ class Simulation {
 	static int scatterWin(int[][] view, int statistics[][]) {
 		/* Create as many counters as many scatters there in the game. */
 		Map<Integer, Integer> numberOfScatters = new HashMap<Integer, Integer>();
-		for (Integer scatter : SCATTER_INDICES) {
+		for (Integer scatter : SCATTERS) {
 			numberOfScatters.put(scatter, 0);
 		}
 
 		/* Count scatters on the screen. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				if (SCATTER_INDICES.contains(view[i][j]) == true) {
+				if (SCATTERS.contains(view[i][j]) == true) {
 					numberOfScatters.put(view[i][j],
 							numberOfScatters.get(view[i][j]) + 1);
 				}
@@ -676,7 +682,7 @@ class Simulation {
 
 		int k = 0;
 		int win = 0;
-		for (Integer scatter : SCATTER_INDICES) {
+		for (Integer scatter : SCATTERS) {
 			/* Calculate scatter win. */
 			int value = 0;
 			if (luckyLadysCharm == true) {
@@ -742,7 +748,7 @@ class Simulation {
 				 * win.
 				 */
 				int substituent = line[i];
-				if (WILD_INDICES.contains(line[i]) == false) {
+				if (WILDS.contains(line[i]) == false) {
 					continue;
 				}
 
@@ -804,13 +810,13 @@ class Simulation {
 
 		// TODO It should not be substituted by this way, but it will be done
 		// like this, because of the customer request.
-		int substituent = WILD_INDICES.iterator().next();
+		int substituent = WILDS.iterator().next();
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
 				/* Do nothing if the wild is not extend wild. */
-				if (EXTEND_WILD_INDICES.contains(view[i][j]) == false) {
+				if (EXTENDS.contains(view[i][j]) == false) {
 					continue;
 				}
 
@@ -832,7 +838,7 @@ class Simulation {
 						}
 
 						/* Scatters are not substituted. */
-						if (SCATTER_INDICES.contains(view[k][l]) == true) {
+						if (SCATTERS.contains(view[k][l]) == true) {
 							continue;
 						}
 
@@ -867,7 +873,7 @@ class Simulation {
 			}
 		}
 
-		int substituent = WILD_INDICES.iterator().next();
+		int substituent = WILDS.iterator().next();
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0; i < view.length; i++) {
@@ -907,7 +913,7 @@ class Simulation {
 	static boolean extraStarsSubstitution(int[][] original) {
 		boolean result = false;
 
-		int substituent = WILD_INDICES.iterator().next();
+		int substituent = WILDS.iterator().next();
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0, j, r; i < original.length; i++) {
@@ -977,7 +983,7 @@ class Simulation {
 
 		/* Win accumulated by lines. */
 		int[][] linesStatistics = new int[LINES.size()][3];
-		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
+		int[][] scatterStatistics = new int[SCATTERS.size()][3];
 		int win = Simulation.linesWin(view, linesStatistics)
 				+ Simulation.scatterWin(view, scatterStatistics);
 
@@ -1050,7 +1056,7 @@ class Simulation {
 			for (int j = 0; j < view[i].length; j++) {
 				// TODO If there are more than one scatter symbol it is not
 				// common all of them to trigger free games.
-				if (SCATTER_INDICES.contains(view[i][j]) == true) {
+				if (SCATTERS.contains(view[i][j]) == true) {
 					numberOfScatters++;
 				}
 			}
@@ -1147,7 +1153,7 @@ class Simulation {
 			/* Recover wilds. */
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
-					if (EXTEND_WILD_INDICES.contains(old[i][j]) == false) {
+					if (EXTENDS.contains(old[i][j]) == false) {
 						continue;
 					}
 
@@ -1166,7 +1172,7 @@ class Simulation {
 
 		/* Win accumulated by lines. */
 		int[][] linesStatistics = new int[LINES.size()][3];
-		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
+		int[][] scatterStatistics = new int[SCATTERS.size()][3];
 		int win = Simulation.linesWin(view, linesStatistics)
 				+ Simulation.scatterWin(view, scatterStatistics);
 		win *= freeGamesMultiplier;
@@ -1270,7 +1276,7 @@ class Simulation {
 
 		/* Win accumulated by lines. */
 		int[][] linesStatistics = new int[LINES.size()][3];
-		int[][] scatterStatistics = new int[SCATTER_INDICES.size()][3];
+		int[][] scatterStatistics = new int[SCATTERS.size()][3];
 		int win = Simulation.linesWin(view, linesStatistics)
 				+ Simulation.scatterWin(view, scatterStatistics);
 		totalWin += win;

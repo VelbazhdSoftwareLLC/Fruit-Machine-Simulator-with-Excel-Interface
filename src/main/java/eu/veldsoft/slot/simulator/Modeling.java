@@ -239,13 +239,13 @@ class Modeling {
 			System.out.print(Simulation.SYMBOLS.get(i).name + "\t");
 			System.out.print(Simulation.SYMBOLS.get(i).index + "\t");
 
-			if (Simulation.SCATTER_INDICES
+			if (Simulation.SCATTERS
 					.contains(Simulation.SYMBOLS.get(i).index) == true) {
 				System.out.print("Scatter");
-			} else if (Simulation.EXTEND_WILD_INDICES
+			} else if (Simulation.EXTENDS
 					.contains(Simulation.SYMBOLS.get(i).index) == true) {
 				System.out.print("Extended");
-			} else if (Simulation.WILD_INDICES
+			} else if (Simulation.WILDS
 					.contains(Simulation.SYMBOLS.get(i).index) == true) {
 				System.out.print("Wild");
 			} else {

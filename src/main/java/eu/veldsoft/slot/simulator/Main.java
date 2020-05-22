@@ -192,9 +192,9 @@ public class Main extends Application {
 		List<XSSFPictureData> images = workbook.getAllPictures();
 
 		/* Store all symbol names and mark special like wilds and scatters. */
-		Simulation.WILD_INDICES.clear();
-		Simulation.EXTEND_WILD_INDICES.clear();
-		Simulation.SCATTER_INDICES.clear();
+		Simulation.WILDS.clear();
+		Simulation.EXTENDS.clear();
+		Simulation.SCATTERS.clear();
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
 			Symbol symbol = new Symbol();
@@ -208,20 +208,20 @@ public class Main extends Application {
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Wild") == true) {
 				symbol.type = Symbol.Type.WILD;
-				Simulation.WILD_INDICES.add(s - 1);
+				Simulation.WILDS.add(s - 1);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Extend") == true) {
 				symbol.type = Symbol.Type.EXTEND;
-				Simulation.WILD_INDICES.add(s - 1);
-				Simulation.EXTEND_WILD_INDICES.add(s - 1);
+				Simulation.WILDS.add(s - 1);
+				Simulation.EXTENDS.add(s - 1);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Scatter") == true) {
 				symbol.type = Symbol.Type.SCATTER;
-				Simulation.SCATTER_INDICES.add(s - 1);
+				Simulation.SCATTERS.add(s - 1);
 			}
 
 			symbol.image = new Image(
@@ -1127,7 +1127,7 @@ public class Main extends Application {
 							continue;
 						}
 
-						if (Simulation.SCATTER_INDICES
+						if (Simulation.SCATTERS
 								.contains(Simulation.view[i][j]) == false) {
 							continue;
 						}
