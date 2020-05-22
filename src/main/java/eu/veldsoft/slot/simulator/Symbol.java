@@ -9,7 +9,7 @@ import javafx.scene.image.Image;
  */
 final class Symbol {
 	enum Type {
-		NONE, REGULAR, SCATTER, WILD, EXTEND
+		NONE, REGULAR, SCATTER, WILD, EXTEND, FREE, BONUS
 	};
 
 	int index;

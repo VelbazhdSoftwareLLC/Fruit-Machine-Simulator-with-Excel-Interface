@@ -224,6 +224,18 @@ public class Main extends Application {
 				Simulation.SCATTERS.add(s - 1);
 			}
 
+			if (sheet.getRow(s).getCell(1).getStringCellValue()
+					.contains("Free") == true) {
+				symbol.type = Symbol.Type.FREE;
+				Simulation.FREES.add(symbol);
+			}
+
+			if (sheet.getRow(s).getCell(1).getStringCellValue()
+					.contains("Bonus") == true) {
+				symbol.type = Symbol.Type.BONUS;
+				Simulation.BONUSES.add(symbol);
+			}
+
 			symbol.image = new Image(
 					new ByteArrayInputStream(images.get(s - 1).getData()));
 
