@@ -49,10 +49,10 @@ class Simulation {
 	static String[][] freeStrips = {};
 
 	/** Stips in base game. */
-	static int[][] baseReels = null;
+	static Symbol[][] baseReels = null;
 
 	/** Stips in free spins. */
-	static int[][] freeReels = null;
+	static Symbol[][] freeReels = null;
 
 	/**
 	 * Use reels stops in brute force combinations generation and collapse
@@ -263,14 +263,16 @@ class Simulation {
 	 */
 	static void initialize() {
 		/* Transform symbols names to integer values. */
-		baseReels = new int[baseStrips.length][];
+		baseReels = new Symbol[baseStrips.length][];
 		for (int i = 0; i < baseStrips.length; i++) {
-			baseReels[i] = new int[baseStrips[i].length];
+			baseReels[i] = new Symbol[baseStrips[i].length];
 			for (int j = 0; j < baseStrips[i].length; j++) {
-				for (int s = 0; s < SYMBOLS.size(); s++) {
-					if (SYMBOLS.get(s).name.trim()
+				baseReels[i][j] = Util.NO_SYMBOL;
+
+				for (Symbol symbol : SYMBOLS) {
+					if (symbol.name.trim()
 							.equals(baseStrips[i][j].trim()) == true) {
-						baseReels[i][j] = s;
+						baseReels[i][j] = symbol;
 						break;
 					}
 				}
@@ -278,14 +280,16 @@ class Simulation {
 		}
 
 		/* Transform symbols names to integer values. */
-		freeReels = new int[freeStrips.length][];
+		freeReels = new Symbol[freeStrips.length][];
 		for (int i = 0; i < freeStrips.length; i++) {
-			freeReels[i] = new int[freeStrips[i].length];
+			freeReels[i] = new Symbol[freeStrips[i].length];
 			for (int j = 0; j < freeStrips[i].length; j++) {
-				for (int s = 0; s < SYMBOLS.size(); s++) {
-					if (SYMBOLS.get(s).name.trim()
+				freeReels[i][j] = Util.NO_SYMBOL;
+
+				for (Symbol symbol : SYMBOLS) {
+					if (symbol.name.trim()
 							.equals(freeStrips[i][j].trim()) == true) {
-						freeReels[i][j] = s;
+						freeReels[i][j] = symbol;
 						break;
 					}
 				}
@@ -376,7 +380,7 @@ class Simulation {
 	 * @param stops
 	 *            Positions where reels were stopped.
 	 */
-	static void collapse(int view[][], int reels[][], int stops[]) {
+	static void collapse(int view[][], Symbol reels[][], int stops[]) {
 		/* Clear symbols which was part of the total win. */
 		for (int i = 0; i < winners.length; i++) {
 			for (int j = 0; j < winners[i].length; j++) {
@@ -426,7 +430,7 @@ class Simulation {
 				}
 
 				/* Fill the empty cell. */
-				view[i][j] = reels[i][stops[i]];
+				view[i][j] = reels[i][stops[i]].index;
 			}
 		}
 	}
@@ -1095,7 +1099,7 @@ class Simulation {
 	 * @param stops
 	 *            Positions on which reels were stopped.
 	 */
-	static void spin(int[][] reels, int stops[]) {
+	static void spin(Symbol[][] reels, int stops[]) {
 		/* Spin all reels. */
 		for (int i = 0; i < view.length && i < reels.length; i++) {
 			int column[] = new int[view[i].length];
@@ -1114,7 +1118,7 @@ class Simulation {
 
 			/* Copy the column into the view array. */
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = reels[i][column[j]];
+				view[i][j] = reels[i][column[j]].index;
 			}
 		}
 	}

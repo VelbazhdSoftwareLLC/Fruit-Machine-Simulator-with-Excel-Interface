@@ -300,16 +300,14 @@ class Modeling {
 			for (int j = 0; Simulation.baseReels != null && j < max; j++) {
 				for (int i = 0; i < Simulation.baseReels.length; i++) {
 					if (j < Simulation.baseReels[i].length) {
-						System.out.print(Simulation.SYMBOLS
-								.get(Simulation.baseReels[i][j]).name);
+						System.out.print(Simulation.baseReels[i][j].name);
 					}
 					System.out.print("\t");
 				}
 				System.out.print("\t");
 				for (int i = 0; i < Simulation.baseReels.length; i++) {
 					if (j < Simulation.baseReels[i].length) {
-						System.out.print(Simulation.SYMBOLS
-								.get(Simulation.baseReels[i][j]).index);
+						System.out.print(Simulation.baseReels[i][j].index);
 					}
 					System.out.print("\t");
 				}
@@ -330,16 +328,14 @@ class Modeling {
 			for (int j = 0; Simulation.freeReels != null && j < max; j++) {
 				for (int i = 0; i < Simulation.freeReels.length; i++) {
 					if (j < Simulation.freeReels[i].length) {
-						System.out.print(Simulation.SYMBOLS
-								.get(Simulation.freeReels[i][j]).name);
+						System.out.print(Simulation.freeReels[i][j].name);
 					}
 					System.out.print("\t");
 				}
 				System.out.print("\t");
 				for (int i = 0; i < Simulation.freeReels.length; i++) {
 					if (j < Simulation.freeReels[i].length) {
-						System.out.print(Simulation.SYMBOLS
-								.get(Simulation.freeReels[i][j]).index);
+						System.out.print(Simulation.freeReels[i][j].index);
 					}
 					System.out.print("\t");
 				}
@@ -356,7 +352,7 @@ class Modeling {
 			for (int i = 0; Simulation.baseReels != null
 					&& i < Simulation.baseReels.length; i++) {
 				for (int j = 0; j < Simulation.baseReels[i].length; j++) {
-					counters[i][Simulation.baseReels[i][j]]++;
+					counters[i][Simulation.baseReels[i][j].index]++;
 				}
 			}
 			for (int i = 0; Simulation.baseReels != null
@@ -398,7 +394,7 @@ class Modeling {
 			for (int i = 0; Simulation.freeReels != null
 					&& i < Simulation.freeReels.length; i++) {
 				for (int j = 0; j < Simulation.freeReels[i].length; j++) {
-					counters[i][Simulation.freeReels[i][j]]++;
+					counters[i][Simulation.freeReels[i][j].index]++;
 				}
 			}
 			for (int i = 0; Simulation.freeReels != null
