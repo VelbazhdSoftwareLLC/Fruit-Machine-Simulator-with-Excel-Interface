@@ -195,6 +195,9 @@ public class Main extends Application {
 		Simulation.WILDS.clear();
 		Simulation.EXTENDS.clear();
 		Simulation.SCATTERS.clear();
+		Simulation.EXTENDS.clear();
+		Simulation.FREES.clear();
+		Simulation.BONUSES.clear();
 		sheet = workbook.getSheet("Symbols");
 		for (int s = 1; s <= numberOfSymbols; s++) {
 			Symbol symbol = new Symbol();
@@ -221,7 +224,7 @@ public class Main extends Application {
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Scatter") == true) {
 				symbol.type = Symbol.Type.SCATTER;
-				Simulation.SCATTERS.add(s - 1);
+				Simulation.SCATTERS.add(symbol);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
@@ -1139,8 +1142,14 @@ public class Main extends Application {
 							continue;
 						}
 
-						if (Simulation.SCATTERS
-								.contains(Simulation.view[i][j]) == false) {
+						boolean isScatter = false;
+						for (Symbol scatter : Simulation.SCATTERS) {
+							if (Simulation.view[i][j] == scatter.index) {
+								isScatter = true;
+							}
+						}
+
+						if (isScatter == false) {
 							continue;
 						}
 

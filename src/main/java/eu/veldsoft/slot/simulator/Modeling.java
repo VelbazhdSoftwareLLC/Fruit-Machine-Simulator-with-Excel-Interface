@@ -239,16 +239,17 @@ class Modeling {
 			System.out.print(Simulation.SYMBOLS.get(i).name + "\t");
 			System.out.print(Simulation.SYMBOLS.get(i).index + "\t");
 
-			if (Simulation.SCATTERS
-					.contains(Simulation.SYMBOLS.get(i).index) == true) {
+			if (Simulation.SYMBOLS.get(i).type == Symbol.Type.SCATTER) {
 				System.out.print("Scatter");
-			} else if (Simulation.EXTENDS
-					.contains(Simulation.SYMBOLS.get(i).index) == true) {
+			} else if (Simulation.SYMBOLS.get(i).type == Symbol.Type.EXTEND) {
 				System.out.print("Extended");
-			} else if (Simulation.WILDS
-					.contains(Simulation.SYMBOLS.get(i).index) == true) {
+			} else if (Simulation.SYMBOLS.get(i).type == Symbol.Type.WILD) {
 				System.out.print("Wild");
-			} else {
+			} else if (Simulation.SYMBOLS.get(i).type == Symbol.Type.FREE) {
+				System.out.print("Free");
+			} else if (Simulation.SYMBOLS.get(i).type == Symbol.Type.BONUS) {
+				System.out.print("Bonus");
+			} else if (Simulation.SYMBOLS.get(i).type == Symbol.Type.REGULAR) {
 				System.out.print("Regular");
 			}
 
