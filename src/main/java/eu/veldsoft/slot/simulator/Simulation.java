@@ -24,8 +24,8 @@ class Simulation {
 	/** Index of the wild symbol in the array of symbols. */
 	static final Set<Integer> WILDS = new HashSet<Integer>();
 
-	/** Index of the extend wild symbol in the array of symbols. */
-	static final Set<Integer> EXTENDS = new HashSet<Integer>();
+	/** Set of extend wild symbol in the array of symbols. */
+	static final Set<Symbol> EXTENDS = new HashSet<Symbol>();
 
 	/** Set of symbols to trigger free spins in the array of symbols. */
 	static final Set<Symbol> FREES = new HashSet<Symbol>();
@@ -838,15 +838,17 @@ class Simulation {
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
-			for (int j = 0; j < view[i].length; j++) {
-				/* Do nothing if the wild is not extend wild. */
-				if (EXTENDS.contains(view[i][j]) == false) {
-					continue;
+			loop2 : for (int j = 0; j < view[i].length; j++) {
+				for (Symbol extend : EXTENDS) {
+					/* Do nothing if the wild is not extend wild. */
+					if (extend.index == view[i][j]) {
+						continue loop2;
+					}
 				}
 
 				/* Extend wild. */
 				for (int k = i - 1; k <= i + 1; k++) {
-					loop : for (int l = j - 1; l <= j + 1; l++) {
+					loop1 : for (int l = j - 1; l <= j + 1; l++) {
 						/* Check range boundaries. */
 						if (k < 0) {
 							continue;
@@ -864,7 +866,7 @@ class Simulation {
 						for (Symbol scatter : SCATTERS) {
 							/* Scatters are not substituted. */
 							if (view[k][l] == scatter.index) {
-								continue loop;
+								continue loop1;
 							}
 						}
 
@@ -1180,9 +1182,11 @@ class Simulation {
 		if (extraStars == true) {
 			/* Recover wilds. */
 			for (int i = 0; i < view.length; i++) {
-				for (int j = 0; j < view[i].length; j++) {
-					if (EXTENDS.contains(old[i][j]) == false) {
-						continue;
+				loop1: for (int j = 0; j < view[i].length; j++) {
+					for (Symbol extend : EXTENDS) {
+						if (extend.index == old[i][j]) {
+							continue loop1;
+						}
 					}
 
 					/* Copy wild from the old screen. */

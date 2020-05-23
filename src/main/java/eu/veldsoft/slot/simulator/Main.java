@@ -195,7 +195,6 @@ public class Main extends Application {
 		Simulation.WILDS.clear();
 		Simulation.EXTENDS.clear();
 		Simulation.SCATTERS.clear();
-		Simulation.EXTENDS.clear();
 		Simulation.FREES.clear();
 		Simulation.BONUSES.clear();
 		sheet = workbook.getSheet("Symbols");
@@ -218,7 +217,7 @@ public class Main extends Application {
 					.contains("Extend") == true) {
 				symbol.type = Symbol.Type.EXTEND;
 				Simulation.WILDS.add(s - 1);
-				Simulation.EXTENDS.add(s - 1);
+				Simulation.EXTENDS.add(symbol);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
