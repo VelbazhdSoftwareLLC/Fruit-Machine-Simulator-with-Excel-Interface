@@ -210,13 +210,13 @@ public class Main extends Application {
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Wild") == true) {
 				symbol.type = Symbol.Type.WILD;
-				Simulation.WILDS.add(s - 1);
+				Simulation.WILDS.add(symbol);
 			}
 
 			if (sheet.getRow(s).getCell(1).getStringCellValue()
 					.contains("Extend") == true) {
 				symbol.type = Symbol.Type.EXTEND;
-				Simulation.WILDS.add(s - 1);
+				Simulation.WILDS.add(symbol);
 				Simulation.EXTENDS.add(symbol);
 			}
 
@@ -751,6 +751,7 @@ public class Main extends Application {
 
 		if (mode == Mode.SIMULATION) {
 			Simulation.simulate(numberOfSimulations, progressPrintOnIteration);
+			System.exit(0);
 		}
 
 		if (mode == Mode.VISUALIZATION) {

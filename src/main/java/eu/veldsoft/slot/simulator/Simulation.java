@@ -22,7 +22,7 @@ class Simulation {
 	static final Set<Symbol> SCATTERS = new HashSet<Symbol>();
 
 	/** Index of the wild symbol in the array of symbols. */
-	static final Set<Integer> WILDS = new HashSet<Integer>();
+	static final Set<Symbol> WILDS = new HashSet<Symbol>();
 
 	/** Set of extend wild symbol in the array of symbols. */
 	static final Set<Symbol> EXTENDS = new HashSet<Symbol>();
@@ -465,11 +465,18 @@ class Simulation {
 		/* Wild index with counter and win amount. */
 		int[][] values = new int[WILDS.size()][];
 		for (int i = 0; i < WILDS.size(); i++) {
-			values[i] = new int[]{(Integer) (WILDS.toArray()[i]), 0, 0};
+			values[i] = new int[]{((Symbol) (WILDS.toArray()[i])).index, 0, 0};
+		}
+
+		boolean isWild = false;
+		for (Symbol wild : WILDS) {
+			if (wild.index == line[0]) {
+				isWild = true;
+			}
 		}
 
 		/* If there is no leading wild there is no wild win. */
-		if (WILDS.contains(line[0]) == false) {
+		if (isWild == false) {
 			return (new int[]{Util.NO_SYMBOL.index, 0, 0});
 		}
 
@@ -524,7 +531,7 @@ class Simulation {
 		int symbol = line[0];
 
 		/* Wild symbol passing to find first regular symbol. */
-		loop : for (int i = 0; i < line.length; i++) {
+		loop1 : for (int i = 0; i < line.length; i++) {
 			if (line[i] == Util.NO_SYMBOL.index) {
 				break;
 			}
@@ -532,12 +539,19 @@ class Simulation {
 			for (Symbol scatter : SCATTERS) {
 				/* Scatter stops the line. */
 				if (line[i] == scatter.index) {
-					break loop;
+					break loop1;
+				}
+			}
+
+			boolean isWild = false;
+			for (Symbol wild : WILDS) {
+				if (wild.index == line[i]) {
+					isWild = true;
 				}
 			}
 
 			/* First no wild symbol found. */
-			if (WILDS.contains(line[i]) == false) {
+			if (isWild == false) {
 				boolean isScatter = false;
 				for (Symbol scatter : SCATTERS) {
 					if (line[i] == scatter.index) {
@@ -557,16 +571,23 @@ class Simulation {
 		int lineMultiplier = 1;
 
 		/* Wild symbol substitution. */
-		loop : for (int i = 0; i < line.length && wildsOff == false; i++) {
+		loop1 : for (int i = 0; i < line.length && wildsOff == false; i++) {
 			for (Symbol scatter : SCATTERS) {
 				/* Scatter is not substituted. */
 				if (line[i] == scatter.index) {
-					continue loop;
+					continue loop1;
+				}
+			}
+
+			boolean isWild = false;
+			for (Symbol wild : WILDS) {
+				if (wild.index == line[i]) {
+					isWild = true;
 				}
 			}
 
 			/* Only wilds are substituted. */
-			if (WILDS.contains(line[i]) == false) {
+			if (isWild == false) {
 				continue;
 			}
 
@@ -763,16 +784,23 @@ class Simulation {
 			int[] line = Simulation.emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
-			for (int i = 0; i < line.length; i++) {
+			loop1 : for (int i = 0; i < line.length; i++) {
 				int index = LINES.get(l).positions[i];
 				line[i] = view[i][index];
+				int substituent = line[i];
+
+				boolean isWild = false;
+				for (Symbol wild : WILDS) {
+					if (wild.index == line[i]) {
+						isWild = true;
+					}
+				}
 
 				/*
 				 * If current symbol is not wild there is no need to check for a
 				 * win.
 				 */
-				int substituent = line[i];
-				if (WILDS.contains(line[i]) == false) {
+				if (isWild == false) {
 					continue;
 				}
 
@@ -834,7 +862,7 @@ class Simulation {
 
 		// TODO It should not be substituted by this way, but it will be done
 		// like this, because of the customer request.
-		int substituent = WILDS.iterator().next();
+		int substituent = WILDS.iterator().next().index;
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
@@ -901,7 +929,7 @@ class Simulation {
 			}
 		}
 
-		int substituent = WILDS.iterator().next();
+		int substituent = WILDS.iterator().next().index;
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0; i < view.length; i++) {
@@ -941,7 +969,7 @@ class Simulation {
 	static boolean extraStarsSubstitution(int[][] original) {
 		boolean result = false;
 
-		int substituent = WILDS.iterator().next();
+		int substituent = WILDS.iterator().next().index;
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0, j, r; i < original.length; i++) {
@@ -1182,7 +1210,7 @@ class Simulation {
 		if (extraStars == true) {
 			/* Recover wilds. */
 			for (int i = 0; i < view.length; i++) {
-				loop1: for (int j = 0; j < view[i].length; j++) {
+				loop1 : for (int j = 0; j < view[i].length; j++) {
 					for (Symbol extend : EXTENDS) {
 						if (extend.index == old[i][j]) {
 							continue loop1;
