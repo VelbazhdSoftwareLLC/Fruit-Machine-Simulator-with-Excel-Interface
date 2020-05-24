@@ -380,7 +380,7 @@ public class Main extends Application {
 			}
 		}
 
-		Simulation.view = new int[numberOfReels][numberOfRows];
+		Simulation.view = new Symbol[numberOfReels][numberOfRows];
 		Simulation.winners = new boolean[numberOfReels][numberOfRows];
 	}
 
@@ -837,13 +837,13 @@ public class Main extends Application {
 			/* Visualize symbols on the screen. */
 			for (int i = 0; i < Simulation.view.length; i++) {
 				for (int j = 0; j < Simulation.view[i].length; j++) {
-					if (Simulation.view[i][j] == Util.NO_SYMBOL.index) {
+					if (Simulation.view[i][j] == Util.NO_SYMBOL) {
 						continue;
 					}
 
 					/* Find symbol by its index. */
 					for (Symbol symbol : Simulation.SYMBOLS) {
-						if (Simulation.view[i][j] == symbol.index) {
+						if (Simulation.view[i][j] == symbol) {
 							symbolsViews[i][j].setImage(symbol.image);
 						}
 					}
@@ -1144,7 +1144,7 @@ public class Main extends Application {
 
 						boolean isScatter = false;
 						for (Symbol scatter : Simulation.SCATTERS) {
-							if (Simulation.view[i][j] == scatter.index) {
+							if (Simulation.view[i][j] == scatter) {
 								isScatter = true;
 							}
 						}

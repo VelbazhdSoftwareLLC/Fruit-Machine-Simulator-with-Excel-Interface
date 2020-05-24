@@ -61,7 +61,7 @@ class Simulation {
 	static int[] reelsStops = {};
 
 	/** Current visible symbols on the screen. */
-	static int[][] view = {};
+	static Symbol[][] view = {};
 
 	/** Cells on the screen which took part of the wins. */
 	static boolean[][] winners = {};
@@ -215,7 +215,7 @@ class Simulation {
 	static void clear() {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = Util.NO_SYMBOL.index;
+				view[i][j] = Util.NO_SYMBOL;
 			}
 		}
 
@@ -246,12 +246,12 @@ class Simulation {
 
 		for (int j = 0; j < max; j++) {
 			for (int i = 0; i < view.length && j < view[i].length; i++) {
-				if (view[i][j] == Util.NO_SYMBOL.index) {
+				if (view[i][j] == Util.NO_SYMBOL) {
 					out.print("***\t");
 					continue;
 				}
 
-				out.print(SYMBOLS.get(view[i][j]).name + "\t");
+				out.print(view[i][j].name + "\t");
 			}
 
 			out.println();
@@ -299,7 +299,7 @@ class Simulation {
 		/* Initialize view with no symbols. */
 		for (int i = 0; i < view.length; i++) {
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = Util.NO_SYMBOL.index;
+				view[i][j] = Util.NO_SYMBOL;
 			}
 		}
 
@@ -380,7 +380,7 @@ class Simulation {
 	 * @param stops
 	 *            Positions where reels were stopped.
 	 */
-	static void collapse(int view[][], Symbol reels[][], int stops[]) {
+	static void collapse(Symbol view[][], Symbol reels[][], int stops[]) {
 		/* Clear symbols which was part of the total win. */
 		for (int i = 0; i < winners.length; i++) {
 			for (int j = 0; j < winners[i].length; j++) {
@@ -388,7 +388,7 @@ class Simulation {
 					continue;
 				}
 
-				view[i][j] = Util.NO_SYMBOL.index;
+				view[i][j] = Util.NO_SYMBOL;
 			}
 		}
 
@@ -401,10 +401,10 @@ class Simulation {
 				 * Swap empty symbol with the symbol above it and restart reel
 				 * checking.
 				 */
-				if (view[i][j - 1] != Util.NO_SYMBOL.index
-						&& view[i][j] == Util.NO_SYMBOL.index) {
+				if (view[i][j - 1] != Util.NO_SYMBOL
+						&& view[i][j] == Util.NO_SYMBOL) {
 					view[i][j] = view[i][j - 1];
-					view[i][j - 1] = Util.NO_SYMBOL.index;
+					view[i][j - 1] = Util.NO_SYMBOL;
 					done = false;
 				}
 			}
@@ -419,7 +419,7 @@ class Simulation {
 		for (int i = 0; i < view.length; i++) {
 			for (int j = view[i].length - 1; j >= 0; j--) {
 				/* If the cell is not empty do nothing. */
-				if (view[i][j] != Util.NO_SYMBOL.index) {
+				if (view[i][j] != Util.NO_SYMBOL) {
 					continue;
 				}
 
@@ -430,7 +430,7 @@ class Simulation {
 				}
 
 				/* Fill the empty cell. */
-				view[i][j] = reels[i][stops[i]].index;
+				view[i][j] = reels[i][stops[i]];
 			}
 		}
 	}
@@ -443,11 +443,11 @@ class Simulation {
 	 * 
 	 * @return Single line as array with no symbols.
 	 */
-	static int[] emptyLine(int size) {
-		int[] line = new int[size];
+	static Symbol[] emptyLine(int size) {
+		Symbol[] line = new Symbol[size];
 
 		for (int i = 0; i < line.length; i++) {
-			line[i] = Util.NO_SYMBOL.index;
+			line[i] = Util.NO_SYMBOL;
 		}
 
 		return line;
@@ -461,23 +461,23 @@ class Simulation {
 	 *
 	 * @return Calculated win.
 	 */
-	static int[] wildLineWin(int[] line) {
+	static Object[] wildLineWin(Symbol[] line) {
 		/* Wild index with counter and win amount. */
-		int[][] values = new int[WILDS.size()][];
+		Object[][] values = new Object[WILDS.size()][];
 		for (int i = 0; i < WILDS.size(); i++) {
-			values[i] = new int[]{((Symbol) (WILDS.toArray()[i])).index, 0, 0};
+			values[i] = new Object[]{WILDS.toArray()[i], Integer.valueOf(0), Integer.valueOf(0)};
 		}
 
 		boolean isWild = false;
 		for (Symbol wild : WILDS) {
-			if (wild.index == line[0]) {
+			if (wild == line[0]) {
 				isWild = true;
 			}
 		}
 
 		/* If there is no leading wild there is no wild win. */
 		if (isWild == false) {
-			return (new int[]{Util.NO_SYMBOL.index, 0, 0});
+			return (new Object[]{Util.NO_SYMBOL.index, Integer.valueOf(0), Integer.valueOf(0)});
 		}
 
 		/* Each wild can lead to different level of win. */
@@ -491,12 +491,12 @@ class Simulation {
 				}
 
 				/* Count how long is the wild line. */
-				values[j][1]++;
+				values[j][1] = ((Integer)values[j][1]) + 1;
 			}
 
 			/* Calculate win marked by line with wilds. */
-			values[j][2] = singleLineBet * PAYTABLE[values[j][1]][values[j][0]];
-			if (values[index][2] < values[j][2]) {
+			values[j][2] = singleLineBet * PAYTABLE[(Integer)values[j][1]][((Symbol)values[j][0]).index];
+			if ((Integer)values[index][2] < (Integer)values[j][2]) {
 				index = j;
 			}
 		}
@@ -516,36 +516,36 @@ class Simulation {
 	 *
 	 * @return Calculated win.
 	 */
-	static int lineWin(int line[], int statistics[][], int index) {
+	static int lineWin(Symbol line[], int statistics[][], int index) {
 		for (Symbol scatter : SCATTERS) {
 			/* Scatter can not lead win combination. */
-			if (scatter.index == line[0]) {
+			if (scatter == line[0]) {
 				return 0;
 			}
 		}
 
 		/* Calculate wild win if there is any. */
-		int[] wildWin = Simulation.wildLineWin(line);
+		Object[] wildWin = Simulation.wildLineWin(line);
 
 		/* Keep first symbol in the line. */
-		int symbol = line[0];
+		Symbol symbol = line[0];
 
 		/* Wild symbol passing to find first regular symbol. */
 		loop1 : for (int i = 0; i < line.length; i++) {
-			if (line[i] == Util.NO_SYMBOL.index) {
+			if (line[i] == Util.NO_SYMBOL) {
 				break;
 			}
 
 			for (Symbol scatter : SCATTERS) {
 				/* Scatter stops the line. */
-				if (line[i] == scatter.index) {
+				if (line[i] == scatter) {
 					break loop1;
 				}
 			}
 
 			boolean isWild = false;
 			for (Symbol wild : WILDS) {
-				if (wild.index == line[i]) {
+				if (wild == line[i]) {
 					isWild = true;
 				}
 			}
@@ -554,7 +554,7 @@ class Simulation {
 			if (isWild == false) {
 				boolean isScatter = false;
 				for (Symbol scatter : SCATTERS) {
-					if (line[i] == scatter.index) {
+					if (line[i] == scatter) {
 						isScatter = true;
 					}
 				}
@@ -574,14 +574,14 @@ class Simulation {
 		loop1 : for (int i = 0; i < line.length && wildsOff == false; i++) {
 			for (Symbol scatter : SCATTERS) {
 				/* Scatter is not substituted. */
-				if (line[i] == scatter.index) {
+				if (line[i] == scatter) {
 					continue loop1;
 				}
 			}
 
 			boolean isWild = false;
 			for (Symbol wild : WILDS) {
-				if (wild.index == line[i]) {
+				if (wild == line[i]) {
 					isWild = true;
 				}
 			}
@@ -610,24 +610,24 @@ class Simulation {
 
 		/* Clear unused symbols. */
 		for (int i = number; i < line.length; i++) {
-			line[i] = Util.NO_SYMBOL.index;
+			line[i] = Util.NO_SYMBOL;
 		}
 
 		/* Calculate single line win. */
-		int win = singleLineBet * PAYTABLE[number][symbol] * lineMultiplier;
+		int win = singleLineBet * PAYTABLE[number][symbol.index] * lineMultiplier;
 
 		/* Adjust the win according wild line information. */
-		if (win < wildWin[2]) {
-			symbol = wildWin[0];
-			number = wildWin[1];
-			win = wildWin[2];
+		if (win < (Integer)wildWin[2]) {
+			symbol = (Symbol)wildWin[0];
+			number = (Integer)wildWin[1];
+			win = (Integer)wildWin[2];
 		}
 
 		/*
 		 * Collect statistics for the scatter wins (symbol count, symbol index,
 		 * win).
 		 */
-		statistics[index] = new int[]{number, symbol, win};
+		statistics[index] = new int[]{number, symbol.index, win};
 
 		return (win);
 	}
@@ -642,14 +642,14 @@ class Simulation {
 	 *
 	 * @return Calculated win.
 	 */
-	static int linesWin(int[][] view, int statistics[][]) {
+	static int linesWin(Symbol[][] view, int statistics[][]) {
 		int win = 0;
 
 		/* Check wins in all possible lines. */
 		for (int l = 0; l < LINES.size(); l++) {
 			/* Initialize an empty line. */
-			int[] line = Simulation.emptyLine(LINES.get(l).positions.length);
-			int[] reverse = Simulation.emptyLine(LINES.get(l).positions.length);
+			Symbol[] line = Simulation.emptyLine(LINES.get(l).positions.length);
+			Symbol[] reverse = Simulation.emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
@@ -662,7 +662,7 @@ class Simulation {
 
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; result > 0 && i < line.length
-					&& line[i] != Util.NO_SYMBOL.index; i++) {
+					&& line[i] != Util.NO_SYMBOL; i++) {
 				int index = LINES.get(l).positions[i];
 				winners[i][index] = true;
 				winnerLines[l] = result;
@@ -677,7 +677,7 @@ class Simulation {
 
 				/* Mark cells used in win formation only if there is a win. */
 				for (int i = 0; result > 0 && i < reverse.length
-						&& reverse[i] != Util.NO_SYMBOL.index; i++) {
+						&& reverse[i] != Util.NO_SYMBOL; i++) {
 					int index = LINES.get(l).positions[line.length - i - 1];
 					winners[i][index] = true;
 					winnerLines[l] = result;
@@ -701,11 +701,11 @@ class Simulation {
 	 *
 	 * @return Win from scatters.
 	 */
-	static int scatterWin(int[][] view, int statistics[][]) {
+	static int scatterWin(Symbol[][] view, int statistics[][]) {
 		/* Create as many counters as many scatters there in the game. */
-		Map<Integer, Integer> numberOfScatters = new HashMap<Integer, Integer>();
+		Map<Symbol, Integer> numberOfScatters = new HashMap<Symbol, Integer>();
 		for (Symbol scatter : SCATTERS) {
-			numberOfScatters.put(scatter.index, 0);
+			numberOfScatters.put(scatter, 0);
 		}
 
 		/* Count scatters on the screen. */
@@ -714,7 +714,7 @@ class Simulation {
 
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
-					if (scatter.index != view[i][j]) {
+					if (scatter != view[i][j]) {
 						continue;
 					}
 
@@ -731,10 +731,10 @@ class Simulation {
 			int value = 0;
 			if (luckyLadysCharm == true) {
 				value = PAYTABLE[numberOfScatters
-						.get(scatter.index)][scatter.index] * scatterMultiplier;
+						.get(scatter)][scatter.index] * scatterMultiplier;
 			} else {
 				value = PAYTABLE[numberOfScatters
-						.get(scatter.index)][scatter.index] * totalBet
+						.get(scatter)][scatter.index] * totalBet
 						* scatterMultiplier;
 			}
 
@@ -747,13 +747,13 @@ class Simulation {
 			 * Collect statistics for the scatter wins (number of scatters,
 			 * scatter index, win).
 			 */
-			statistics[k++] = new int[]{numberOfScatters.get(scatter.index),
+			statistics[k++] = new int[]{numberOfScatters.get(scatter),
 					scatter.index, value};
 
 			/* Mark cells used in win formation only if there is a win. */
 			for (int i = 0; i < view.length; i++) {
 				for (int j = 0; j < view[i].length; j++) {
-					if (view[i][j] != scatter.index) {
+					if (view[i][j] != scatter) {
 						continue;
 					}
 
@@ -774,24 +774,24 @@ class Simulation {
 	 * @param view
 	 *            Screen with symbols.
 	 */
-	static boolean burningHotSubstitution(int[][] view) {
+	static boolean burningHotSubstitution(Symbol[][] view) {
 		boolean result = false;
 
 		/* Check wins in all possible lines. */
 		int progress = 0;
 		start : for (int l = 0; l < LINES.size(); l++) {
 			/* Initialize an empty line. */
-			int[] line = Simulation.emptyLine(LINES.get(l).positions.length);
+			Symbol[] line = Simulation.emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
-			loop1 : for (int i = 0; i < line.length; i++) {
+			for (int i = 0; i < line.length; i++) {
 				int index = LINES.get(l).positions[i];
 				line[i] = view[i][index];
-				int substituent = line[i];
+				Symbol substituent = line[i];
 
 				boolean isWild = false;
 				for (Symbol wild : WILDS) {
-					if (wild.index == line[i]) {
+					if (wild == line[i]) {
 						isWild = true;
 					}
 				}
@@ -848,13 +848,13 @@ class Simulation {
 	 * @param original
 	 *            Screen with symbols.
 	 */
-	static boolean luckyAndWildSubstitution(int[][] original) {
+	static boolean luckyAndWildSubstitution(Symbol[][] original) {
 		boolean result = false;
 
 		/* Deep copy of the view. */
-		int[][] view = new int[original.length][];
+		Symbol[][] view = new Symbol[original.length][];
 		for (int i = 0; i < original.length; i++) {
-			view[i] = new int[original[i].length];
+			view[i] = new Symbol[original[i].length];
 			for (int j = 0; j < original[i].length; j++) {
 				view[i][j] = original[i][j];
 			}
@@ -862,14 +862,14 @@ class Simulation {
 
 		// TODO It should not be substituted by this way, but it will be done
 		// like this, because of the customer request.
-		int substituent = WILDS.iterator().next().index;
+		Symbol substituent = WILDS.iterator().next();
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
 			loop2 : for (int j = 0; j < view[i].length; j++) {
 				for (Symbol extend : EXTENDS) {
 					/* Do nothing if the wild is not extend wild. */
-					if (extend.index == view[i][j]) {
+					if (extend == view[i][j]) {
 						continue loop2;
 					}
 				}
@@ -893,7 +893,7 @@ class Simulation {
 
 						for (Symbol scatter : SCATTERS) {
 							/* Scatters are not substituted. */
-							if (view[k][l] == scatter.index) {
+							if (view[k][l] == scatter) {
 								continue loop1;
 							}
 						}
@@ -917,19 +917,19 @@ class Simulation {
 	 * @param original
 	 *            Screen with symbols.
 	 */
-	static boolean twentyHotBlastSubstitution(int[][] original) {
+	static boolean twentyHotBlastSubstitution(Symbol[][] original) {
 		boolean result = false;
 
 		/* Deep copy of the view. */
-		int[][] view = new int[original.length][];
+		Symbol[][] view = new Symbol[original.length][];
 		for (int i = 0; i < original.length; i++) {
-			view[i] = new int[original[i].length];
+			view[i] = new Symbol[original[i].length];
 			for (int j = 0; j < original[i].length; j++) {
 				view[i][j] = original[i][j];
 			}
 		}
 
-		int substituent = WILDS.iterator().next().index;
+		Symbol substituent = WILDS.iterator().next();
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0; i < view.length; i++) {
@@ -966,10 +966,10 @@ class Simulation {
 	 * @param original1
 	 *            Screen with symbols.
 	 */
-	static boolean extraStarsSubstitution(int[][] original) {
+	static boolean extraStarsSubstitution(Symbol[][] original) {
 		boolean result = false;
 
-		int substituent = WILDS.iterator().next().index;
+		Symbol substituent = WILDS.iterator().next();
 
 		/* Prepare view for wins checking by expanding the wild. */
 		for (int i = 0, j, r; i < original.length; i++) {
@@ -1113,7 +1113,7 @@ class Simulation {
 				for (int j = 0; j < view[i].length; j++) {
 					// TODO If there are more than one scatter symbol it is not
 					// common all of them to trigger free games.
-					if (view[i][j] == scatter.index) {
+					if (view[i][j] == scatter) {
 						numberOfScatters++;
 					}
 				}
@@ -1172,7 +1172,7 @@ class Simulation {
 
 			/* Copy the column into the view array. */
 			for (int j = 0; j < view[i].length; j++) {
-				view[i][j] = reels[i][column[j]].index;
+				view[i][j] = reels[i][column[j]];
 			}
 		}
 	}
@@ -1190,12 +1190,12 @@ class Simulation {
 		}
 
 		/* Keep copy of wilds. */
-		int[][] old = null;
+		Symbol[][] old = null;
 		if (extraStars == true) {
 			/* Deep copy of the view. */
-			old = new int[view.length][];
+			old = new Symbol[view.length][];
 			for (int i = 0; i < view.length; i++) {
-				old[i] = new int[view[i].length];
+				old[i] = new Symbol[view[i].length];
 				for (int j = 0; j < view[i].length; j++) {
 					old[i][j] = view[i][j];
 				}
@@ -1212,7 +1212,7 @@ class Simulation {
 			for (int i = 0; i < view.length; i++) {
 				loop1 : for (int j = 0; j < view[i].length; j++) {
 					for (Symbol extend : EXTENDS) {
-						if (extend.index == old[i][j]) {
+						if (extend == old[i][j]) {
 							continue loop1;
 						}
 					}
