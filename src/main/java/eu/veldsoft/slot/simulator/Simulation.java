@@ -99,14 +99,14 @@ class Simulation {
 	/** Total amount of lost money. */
 	static long lostMoney = 0L;
 
-	/** Total amount of won money in base game. */
-	static long baseMoney = 0L;
-
 	/** Game balance, which is the credit after every base game. */
 	static final List<Integer> balance = new ArrayList<Integer>();
 
 	/** List of coins to be loaded as credit. */
 	static final List<Integer> coins = new ArrayList<Integer>();
+
+	/** Total amount of won money in base game. */
+	static long baseMoney = 0L;
 
 	/**
 	 * All values as win in the base game (even zeros) for the whole simulation.
@@ -236,6 +236,7 @@ class Simulation {
 	 * @param out
 	 *            Print stream reference.
 	 */
+	@SuppressWarnings("unused")
 	private static void printView(PrintStream out) {
 		int max = view[0].length;
 		for (int i = 0; i < view.length; i++) {
@@ -310,10 +311,10 @@ class Simulation {
 		totalBet = singleLineBet * LINES.size();
 
 		/* Allocate memory for the counters. */
-		baseSymbolMoney = new long[view.length+1][SYMBOLS.size()];
-		baseGameSymbolsHitRate = new long[view.length+1][SYMBOLS.size()];
-		freeSymbolMoney = new long[view.length+1][SYMBOLS.size()];
-		freeGameSymbolsHitRate = new long[view.length+1][SYMBOLS.size()];
+		baseSymbolMoney = new long[view.length + 1][SYMBOLS.size()];
+		baseGameSymbolsHitRate = new long[view.length + 1][SYMBOLS.size()];
+		freeSymbolMoney = new long[view.length + 1][SYMBOLS.size()];
+		freeGameSymbolsHitRate = new long[view.length + 1][SYMBOLS.size()];
 		// TODO Counters should be initialized with zeros.
 
 		baseOutcomes.clear();
@@ -465,19 +466,14 @@ class Simulation {
 		/* Wild index with counter and win amount. */
 		Object[][] values = new Object[WILDS.size()][];
 		for (int i = 0; i < WILDS.size(); i++) {
-			values[i] = new Object[]{WILDS.toArray()[i], Integer.valueOf(0), Integer.valueOf(0)};
-		}
-
-		boolean isWild = false;
-		for (Symbol wild : WILDS) {
-			if (wild == line[0]) {
-				isWild = true;
-			}
+			values[i] = new Object[]{WILDS.toArray()[i], Integer.valueOf(0),
+					Integer.valueOf(0)};
 		}
 
 		/* If there is no leading wild there is no wild win. */
-		if (isWild == false) {
-			return (new Object[]{Util.NO_SYMBOL.index, Integer.valueOf(0), Integer.valueOf(0)});
+		if (WILDS.contains(line[0]) == false) {
+			return (new Object[]{Util.NO_SYMBOL.index, Integer.valueOf(0),
+					Integer.valueOf(0)});
 		}
 
 		/* Each wild can lead to different level of win. */
@@ -491,12 +487,13 @@ class Simulation {
 				}
 
 				/* Count how long is the wild line. */
-				values[j][1] = ((Integer)values[j][1]) + 1;
+				values[j][1] = ((Integer) values[j][1]) + 1;
 			}
 
 			/* Calculate win marked by line with wilds. */
-			values[j][2] = singleLineBet * ((Symbol)values[j][0]).pays[ (Integer)values[j][1] ];
-			if ((Integer)values[index][2] < (Integer)values[j][2]) {
+			values[j][2] = singleLineBet
+					* ((Symbol) values[j][0]).pays[(Integer) values[j][1]];
+			if ((Integer) values[index][2] < (Integer) values[j][2]) {
 				index = j;
 			}
 		}
@@ -517,11 +514,9 @@ class Simulation {
 	 * @return Calculated win.
 	 */
 	static int lineWin(Symbol line[], int statistics[][], int index) {
-		for (Symbol scatter : SCATTERS) {
-			/* Scatter can not lead win combination. */
-			if (scatter == line[0]) {
-				return 0;
-			}
+		/* Scatter can not lead win combination. */
+		if (SCATTERS.contains(line[0]) == true) {
+			return 0;
 		}
 
 		/* Calculate wild win if there is any. */
@@ -531,35 +526,19 @@ class Simulation {
 		Symbol symbol = line[0];
 
 		/* Wild symbol passing to find first regular symbol. */
-		loop1 : for (int i = 0; i < line.length; i++) {
+		for (int i = 0; i < line.length; i++) {
 			if (line[i] == Util.NO_SYMBOL) {
 				break;
 			}
 
-			for (Symbol scatter : SCATTERS) {
-				/* Scatter stops the line. */
-				if (line[i] == scatter) {
-					break loop1;
-				}
-			}
-
-			boolean isWild = false;
-			for (Symbol wild : WILDS) {
-				if (wild == line[i]) {
-					isWild = true;
-				}
+			/* Scatter stops the line. */
+			if (SCATTERS.contains(line[i]) == true) {
+				break;
 			}
 
 			/* First no wild symbol found. */
-			if (isWild == false) {
-				boolean isScatter = false;
-				for (Symbol scatter : SCATTERS) {
-					if (line[i] == scatter) {
-						isScatter = true;
-					}
-				}
-
-				if (isScatter == false) {
+			if (WILDS.contains(line[i]) == false) {
+				if (SCATTERS.contains(line[i]) == false) {
 					symbol = line[i];
 				}
 
@@ -571,23 +550,14 @@ class Simulation {
 		int lineMultiplier = 1;
 
 		/* Wild symbol substitution. */
-		loop1 : for (int i = 0; i < line.length && wildsOff == false; i++) {
-			for (Symbol scatter : SCATTERS) {
-				/* Scatter is not substituted. */
-				if (line[i] == scatter) {
-					continue loop1;
-				}
-			}
-
-			boolean isWild = false;
-			for (Symbol wild : WILDS) {
-				if (wild == line[i]) {
-					isWild = true;
-				}
+		for (int i = 0; i < line.length && wildsOff == false; i++) {
+			/* Scatter is not substituted. */
+			if (SCATTERS.contains(line[i]) == true) {
+				continue;
 			}
 
 			/* Only wilds are substituted. */
-			if (isWild == false) {
+			if (WILDS.contains(line[i]) == false) {
 				continue;
 			}
 
@@ -617,10 +587,10 @@ class Simulation {
 		int win = singleLineBet * symbol.pays[number] * lineMultiplier;
 
 		/* Adjust the win according wild line information. */
-		if (win < (Integer)wildWin[2]) {
-			symbol = (Symbol)wildWin[0];
-			number = (Integer)wildWin[1];
-			win = (Integer)wildWin[2];
+		if (win < (Integer) wildWin[2]) {
+			symbol = (Symbol) wildWin[0];
+			number = (Integer) wildWin[1];
+			win = (Integer) wildWin[2];
 		}
 
 		/*
@@ -649,7 +619,8 @@ class Simulation {
 		for (int l = 0; l < LINES.size(); l++) {
 			/* Initialize an empty line. */
 			Symbol[] line = Simulation.emptyLine(LINES.get(l).positions.length);
-			Symbol[] reverse = Simulation.emptyLine(LINES.get(l).positions.length);
+			Symbol[] reverse = Simulation
+					.emptyLine(LINES.get(l).positions.length);
 
 			/* Prepare line for combination check. */
 			for (int i = 0; i < line.length; i++) {
@@ -730,7 +701,8 @@ class Simulation {
 			/* Calculate scatter win. */
 			int value = 0;
 			if (luckyLadysCharm == true) {
-				value = scatter.pays[numberOfScatters.get(scatter)] * scatterMultiplier;
+				value = scatter.pays[numberOfScatters.get(scatter)]
+						* scatterMultiplier;
 			} else {
 				value = scatter.pays[numberOfScatters.get(scatter)] * totalBet
 						* scatterMultiplier;
@@ -787,18 +759,11 @@ class Simulation {
 				line[i] = view[i][index];
 				Symbol substituent = line[i];
 
-				boolean isWild = false;
-				for (Symbol wild : WILDS) {
-					if (wild == line[i]) {
-						isWild = true;
-					}
-				}
-
 				/*
 				 * If current symbol is not wild there is no need to check for a
 				 * win.
 				 */
-				if (isWild == false) {
+				if (WILDS.contains(line[i]) == false) {
 					continue;
 				}
 
@@ -864,17 +829,15 @@ class Simulation {
 
 		/* Expand wilds. */
 		for (int i = 0; i < view.length; i++) {
-			loop2 : for (int j = 0; j < view[i].length; j++) {
-				for (Symbol extend : EXTENDS) {
-					/* Do nothing if the wild is not extend wild. */
-					if (extend == view[i][j]) {
-						continue loop2;
-					}
+			for (int j = 0; j < view[i].length; j++) {
+				/* Do nothing if the wild is not extend wild. */
+				if (EXTENDS.contains(view[i][j]) == true) {
+					continue;
 				}
 
 				/* Extend wild. */
 				for (int k = i - 1; k <= i + 1; k++) {
-					loop1 : for (int l = j - 1; l <= j + 1; l++) {
+					for (int l = j - 1; l <= j + 1; l++) {
 						/* Check range boundaries. */
 						if (k < 0) {
 							continue;
@@ -889,11 +852,9 @@ class Simulation {
 							continue;
 						}
 
-						for (Symbol scatter : SCATTERS) {
-							/* Scatters are not substituted. */
-							if (view[k][l] == scatter) {
-								continue loop1;
-							}
+						/* Scatters are not substituted. */
+						if (SCATTERS.contains(view[k][l]) == true) {
+							continue;
 						}
 
 						/* Flag for substitution. */
@@ -1019,6 +980,7 @@ class Simulation {
 	/**
 	 * Play single Arabian Nights bonus game.
 	 */
+	@SuppressWarnings("unused")
 	private static void singleArabianNightsBonusGame() {
 	}
 
@@ -1208,11 +1170,9 @@ class Simulation {
 		if (extraStars == true) {
 			/* Recover wilds. */
 			for (int i = 0; i < view.length; i++) {
-				loop1 : for (int j = 0; j < view[i].length; j++) {
-					for (Symbol extend : EXTENDS) {
-						if (extend == old[i][j]) {
-							continue loop1;
-						}
+				for (int j = 0; j < view[i].length; j++) {
+					if (EXTENDS.contains(old[i][j]) == true) {
+						continue;
 					}
 
 					/* Copy wild from the old screen. */

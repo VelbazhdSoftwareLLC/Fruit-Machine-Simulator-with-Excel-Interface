@@ -20,7 +20,7 @@ final class Util {
 		NO_SYMBOL.index = -1;
 		NO_SYMBOL.name = "";
 		NO_SYMBOL.type = Symbol.Type.NONE;
-		NO_SYMBOL.pays = new int[0];
+		NO_SYMBOL.pays = null;
 		NO_SYMBOL.image = null;
 	}
 }

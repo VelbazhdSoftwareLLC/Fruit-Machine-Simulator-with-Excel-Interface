@@ -87,7 +87,7 @@ public class Main extends Application {
 		System.out.println(
 				"*******************************************************************************");
 		System.out.println(
-				"* Fruit Machine Simulator with Excel Interface version 0.0.1                  *");
+				"* Fruit Machine Simulator with Excel Interface version 1.0.0                  *");
 		System.out.println(
 				"* Copyrights (C) 2017-2020 Velbazhd Software LLC                              *");
 		System.out.println(
@@ -246,18 +246,18 @@ public class Main extends Application {
 
 		/* Load pay table. */
 		sheet = workbook.getSheet("Paytable");
-		for (int r=1; r<=Simulation.SYMBOLS.size(); r++) {
-			int pays[] = new int[numberOfReels+1];
+		for (int r = 1; r <= Simulation.SYMBOLS.size(); r++) {
+			int pays[] = new int[numberOfReels + 1];
 			for (int c = 1; c <= numberOfReels; c++) {
-				pays[c] = (int) (sheet.getRow(r)
-						.getCell(numberOfReels - c + 1).getNumericCellValue());
+				pays[c] = (int) (sheet.getRow(r).getCell(numberOfReels - c + 1)
+						.getNumericCellValue());
 			}
-			
+
 			for (Symbol symbol : Simulation.SYMBOLS) {
-				if(symbol.index != r-1) {
+				if (symbol.index != r - 1) {
 					continue;
 				}
-				
+
 				symbol.pays = pays;
 				Simulation.PAYTABLE.add(symbol);
 				break;
@@ -473,12 +473,6 @@ public class Main extends Application {
 
 	/**
 	 * Application single entry point method.
-	 * 
-	 * java Main -g 10m -p 100k -input "./doc/game001.xlsx" -basereels "Base
-	 * Reels 95.5 RTP"
-	 * 
-	 * java Main -g 100m -p 1m -input "./doc/game001.xlsx"-binsize 1
-	 * -binincrement 0 -freeoff -basereels "Base Reels 95.5 RTP"
 	 * 
 	 * @param args
 	 *            Command line arguments.
