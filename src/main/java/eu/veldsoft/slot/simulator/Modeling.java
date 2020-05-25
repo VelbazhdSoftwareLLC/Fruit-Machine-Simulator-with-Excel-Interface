@@ -258,14 +258,14 @@ class Modeling {
 		System.out.println();
 
 		System.out.println("Paytable:");
-		for (int i = 0; i < Simulation.PAYTABLE.length; i++) {
+		for (int i = 0; i < Simulation.view.length+1; i++) {
 			System.out.print("\t" + i + " of");
 		}
 		System.out.println();
-		for (int j = 0; j < Simulation.PAYTABLE[0].length; j++) {
-			System.out.print(Simulation.SYMBOLS.get(j).name + "\t");
-			for (int i = 0; i < Simulation.PAYTABLE.length; i++) {
-				System.out.print(Simulation.PAYTABLE[i][j] + "\t");
+		for (Symbol symbol : Simulation.SYMBOLS) {
+			System.out.print(symbol.name + "\t");
+			for (int value : symbol.pays) {
+				System.out.print(value + "\t");
 			}
 			System.out.println();
 		}
@@ -347,8 +347,7 @@ class Modeling {
 
 		System.out.println("Base Game Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[Simulation.PAYTABLE.length
-					- 1][Simulation.SYMBOLS.size()];
+			int[][] counters = new int[Simulation.view.length][Simulation.SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; Simulation.baseReels != null
 					&& i < Simulation.baseReels.length; i++) {
@@ -389,8 +388,7 @@ class Modeling {
 
 		System.out.println("Free Games Reels:");
 		/* Count symbols in reels. */ {
-			int[][] counters = new int[Simulation.PAYTABLE.length
-					- 1][Simulation.SYMBOLS.size()];
+			int[][] counters = new int[Simulation.view.length][Simulation.SYMBOLS.size()];
 			// TODO Counters should be initialized with zeros.
 			for (int i = 0; Simulation.freeReels != null
 					&& i < Simulation.freeReels.length; i++) {

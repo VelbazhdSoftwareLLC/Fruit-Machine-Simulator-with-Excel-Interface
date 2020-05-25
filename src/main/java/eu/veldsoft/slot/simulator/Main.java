@@ -246,11 +246,21 @@ public class Main extends Application {
 
 		/* Load pay table. */
 		sheet = workbook.getSheet("Paytable");
-		Simulation.PAYTABLE = new int[numberOfReels + 1][numberOfSymbols];
-		for (int r = 1; r <= numberOfSymbols; r++) {
+		for (int r=1; r<=Simulation.SYMBOLS.size(); r++) {
+			int pays[] = new int[numberOfReels+1];
 			for (int c = 1; c <= numberOfReels; c++) {
-				Simulation.PAYTABLE[c][r - 1] = (int) (sheet.getRow(r)
+				pays[c] = (int) (sheet.getRow(r)
 						.getCell(numberOfReels - c + 1).getNumericCellValue());
+			}
+			
+			for (Symbol symbol : Simulation.SYMBOLS) {
+				if(symbol.index != r-1) {
+					continue;
+				}
+				
+				symbol.pays = pays;
+				Simulation.PAYTABLE.add(symbol);
+				break;
 			}
 		}
 
@@ -401,10 +411,10 @@ public class Main extends Application {
 
 		/* Sum win coefficients for each symbol. */
 		double total = 0;
-		for (int numberOf = 0; numberOf < Simulation.PAYTABLE.length; numberOf++) {
-			for (int symbol = 0; symbol < Simulation.PAYTABLE[numberOf].length; symbol++) {
-				values[symbol] += Simulation.PAYTABLE[numberOf][symbol];
-				total += Simulation.PAYTABLE[numberOf][symbol];
+		for (Symbol symbol : Simulation.PAYTABLE) {
+			for (int value : symbol.pays) {
+				values[symbol.index] += value;
+				total += value;
 			}
 		}
 

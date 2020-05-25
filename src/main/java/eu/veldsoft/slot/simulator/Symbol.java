@@ -15,5 +15,6 @@ final class Symbol {
 	int index;
 	String name;
 	Type type;
+	int pays[];
 	Image image;
 }

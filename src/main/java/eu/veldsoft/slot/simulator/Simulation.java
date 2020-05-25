@@ -34,7 +34,7 @@ class Simulation {
 	static final Set<Symbol> BONUSES = new HashSet<Symbol>();
 
 	/** Slot game pay table. */
-	static int[][] PAYTABLE = {};
+	static final Set<Symbol> PAYTABLE = new HashSet<Symbol>();
 
 	/** Lines combinations. */
 	static final List<Line> LINES = new ArrayList<Line>();
@@ -310,10 +310,10 @@ class Simulation {
 		totalBet = singleLineBet * LINES.size();
 
 		/* Allocate memory for the counters. */
-		baseSymbolMoney = new long[PAYTABLE.length][SYMBOLS.size()];
-		baseGameSymbolsHitRate = new long[PAYTABLE.length][SYMBOLS.size()];
-		freeSymbolMoney = new long[PAYTABLE.length][SYMBOLS.size()];
-		freeGameSymbolsHitRate = new long[PAYTABLE.length][SYMBOLS.size()];
+		baseSymbolMoney = new long[view.length+1][SYMBOLS.size()];
+		baseGameSymbolsHitRate = new long[view.length+1][SYMBOLS.size()];
+		freeSymbolMoney = new long[view.length+1][SYMBOLS.size()];
+		freeGameSymbolsHitRate = new long[view.length+1][SYMBOLS.size()];
 		// TODO Counters should be initialized with zeros.
 
 		baseOutcomes.clear();
@@ -495,7 +495,7 @@ class Simulation {
 			}
 
 			/* Calculate win marked by line with wilds. */
-			values[j][2] = singleLineBet * PAYTABLE[(Integer)values[j][1]][((Symbol)values[j][0]).index];
+			values[j][2] = singleLineBet * ((Symbol)values[j][0]).pays[ (Integer)values[j][1] ];
 			if ((Integer)values[index][2] < (Integer)values[j][2]) {
 				index = j;
 			}
@@ -614,7 +614,7 @@ class Simulation {
 		}
 
 		/* Calculate single line win. */
-		int win = singleLineBet * PAYTABLE[number][symbol.index] * lineMultiplier;
+		int win = singleLineBet * symbol.pays[number] * lineMultiplier;
 
 		/* Adjust the win according wild line information. */
 		if (win < (Integer)wildWin[2]) {
@@ -730,11 +730,9 @@ class Simulation {
 			/* Calculate scatter win. */
 			int value = 0;
 			if (luckyLadysCharm == true) {
-				value = PAYTABLE[numberOfScatters
-						.get(scatter)][scatter.index] * scatterMultiplier;
+				value = scatter.pays[numberOfScatters.get(scatter)] * scatterMultiplier;
 			} else {
-				value = PAYTABLE[numberOfScatters
-						.get(scatter)][scatter.index] * totalBet
+				value = scatter.pays[numberOfScatters.get(scatter)] * totalBet
 						* scatterMultiplier;
 			}
 
