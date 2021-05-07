@@ -3,7 +3,7 @@ plugins {
   id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'eclipse'
   
 java {
@@ -17,18 +17,17 @@ javafx {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
 dependencies {
-    compile 'org.apache.commons:commons-math3:3.6.1'
-    compile 'org.apache.commons:commons-collections4:4.3'
-    compile 'org.apache.commons:commons-compress:1.18'
-    compile 'org.apache.poi:poi:4.0.1'
-    compile 'org.apache.poi:poi-ooxml:4.0.1'
-    compile 'org.apache.poi:poi-ooxml-schemas:4.0.1'
-    compile 'commons-cli:commons-cli:1.4'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'org.apache.commons:commons-collections4:4.3'
+    implementation 'org.apache.commons:commons-compress:1.18'
+    implementation 'org.apache.poi:poi:4.0.1'
+    implementation 'org.apache.poi:poi-ooxml:4.0.1'
+    implementation 'org.apache.poi:poi-ooxml-schemas:4.0.1'
+    implementation 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.12'
 }
 
@@ -36,7 +35,11 @@ task jarAll(type: Jar) {
     manifest {
         attributes 'Main-Class': 'eu.veldsoft.slot.simulator.Main'
     }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    archiveBaseName = project.name + '-all'
+    from { 
+	exclude '**/module-info.class'
+	exclude '**/META-INF/*'
+	configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } 
+    }
     with jar
 }

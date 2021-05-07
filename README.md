@@ -8,6 +8,7 @@ Slot machines, like any other gambling game, have a common parameter called a re
 
 When you are creating a slot machine or you are checking slot machine created by somebody else you need to make a combinatorial calculation of the RTP or to do a Monte-Carlo simulation. Some slot machines are so complex that even the best mathematicians in the world are not capable to make a combinatorial computation of the RTP. In such cases, a Monte-Carlo simulation is the only choice. This project is about a Monte-Carlo simulator that is capable to calculate many statistical parameters of a slot machine mathematical model. 
 
-## Building Command
+## Building Commands
 
+gradle wrapper
 ./gradlew jarAll
