@@ -11,4 +11,5 @@ When you are creating a slot machine or you are checking slot machine created by
 ## Building Commands
 
 gradle wrapper
+
 ./gradlew jarAll
